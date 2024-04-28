@@ -150,3 +150,22 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
+/./shared_code_analysis/data
+/./Neural_network_malware_detector_ch11/chapter_11_UNDER_40/venv/lib/python2.7/site-packages/scipy/interpolate/tests/data
+/./Neural_network_malware_detector_ch11/chapter_11_UNDER_40/venv/lib/python2.7/site-packages/scipy/ndimage/tests/data
+/./Neural_network_malware_detector_ch11/chapter_11_UNDER_40/venv/lib/python2.7/site-packages/scipy/io/matlab/tests/data
+/./Neural_network_malware_detector_ch11/chapter_11_UNDER_40/venv/lib/python2.7/site-packages/scipy/io/tests/data
+/./Neural_network_malware_detector_ch11/chapter_11_UNDER_40/venv/lib/python2.7/site-packages/scipy/io/arff/tests/data
+/./Neural_network_malware_detector_ch11/chapter_11_UNDER_40/venv/lib/python2.7/site-packages/scipy/stats/tests/data
+/./Neural_network_malware_detector_ch11/chapter_11_UNDER_40/venv/lib/python2.7/site-packages/scipy/spatial/tests/data
+/./Neural_network_malware_detector_ch11/chapter_11_UNDER_40/venv/lib/python2.7/site-packages/scipy/linalg/tests/data
+/./Neural_network_malware_detector_ch11/chapter_11_UNDER_40/venv/lib/python2.7/site-packages/scipy/special/tests/data
+/./Neural_network_malware_detector_ch11/chapter_11_UNDER_40/venv/lib/python2.7/site-packages/scipy/misc/tests/data
+/./Neural_network_malware_detector_ch11/chapter_11_UNDER_40/venv/lib/python2.7/site-packages/scipy/sparse/tests/data
+/./Neural_network_malware_detector_ch11/chapter_11_UNDER_40/venv/lib/python2.7/site-packages/numpy/core/tests/data
+/./Neural_network_malware_detector_ch11/chapter_11_UNDER_40/venv/lib/python2.7/site-packages/numpy/lib/tests/data
+/./Neural_network_malware_detector_ch11/chapter_11_UNDER_40/venv/lib/python2.7/site-packages/sklearn/datasets/tests/data
+/./Neural_network_malware_detector_ch11/chapter_11_UNDER_40/venv/lib/python2.7/site-packages/sklearn/datasets/data
+/./Neural_network_malware_detector_ch11/chapter_11_UNDER_40/data
+/./ML_detectors/data
+/./malware_network_apt1/data
