@@ -63,7 +63,7 @@ def scan_file(path):
     if not os.path.exists("saved_detector.pkl"):
         print("It appears you haven't trained a detector yet!  Do this before scanning files.")
         sys.exit(1)
-    with open("saved_detector.pkl") as saved_detector:
+    with open("saved_detector.pkl", "rb") as saved_detector:
         classifier, hasher = pickle.load(saved_detector)
     features = get_string_features(path,hasher)
     result_proba = classifier.predict_proba([features])[:,1]
@@ -72,6 +72,16 @@ def scan_file(path):
         print("It appears this file is malicious!", result_proba)
     else:
         print("It appears this file is benign.", result_proba)
+
+def scan_directory(path):
+    file_paths = []
+    # Walk through the directory and its subdirectories
+    for root, _, files in os.walk(path):
+        for file in files:
+            # Get the full path of each file and append it to the list
+            file_paths.append(os.path.join(root, file))
+    for element in file_paths:
+        scan_file(element)
 
 def train_detector(benign_path,malicious_path,hasher):
     # train the detector on the specified training data
@@ -143,6 +153,7 @@ parser = argparse.ArgumentParser("get windows object vectors for files")
 parser.add_argument("--malware_paths",default=None,help="Path to malware training files")
 parser.add_argument("--benignware_paths",default=None,help="Path to benignware training files")
 parser.add_argument("--scan_file_path",default=None,help="File to scan")
+parser.add_argument("--scan_dir_path",default=None,help="Directory to scan")
 parser.add_argument("--evaluate",default=False,action="store_true",help="Perform cross-validation")
 
 args = parser.parse_args()
@@ -152,6 +163,8 @@ if args.malware_paths and args.benignware_paths and not args.evaluate:
     train_detector(args.benignware_paths,args.malware_paths,hasher)
 elif args.scan_file_path:
     scan_file(args.scan_file_path)
+elif args.scan_dir_path:
+    scan_directory(args.scan_dir_path)
 elif args.malware_paths and args.benignware_paths and args.evaluate:
     X, y = get_training_data(args.benignware_paths,args.malware_paths,hasher)
     cv_evaluate(X,y,hasher)
