@@ -10,7 +10,7 @@ import numpy
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction import FeatureHasher
 
-def get_string_features(path,hasher):
+def get_string_features(path: str, hasher: FeatureHasher):
     MIN_LENGTH = 5
 
     # Regular expression pattern to match strings of 5 or more characters
@@ -45,20 +45,9 @@ def get_string_features(path,hasher):
     # return hashed string features
     print("Extracted {0} strings from {1}".format(len(string_features), path))
     return hashed_features
-    """
-    # extract strings from binary file using regular expressions
-    chars = r" -~"
-    min_length = 5
-    string_regexp = '[%s]{%d,}' % (chars, min_length)
-    file_object = open(path)
-    data = file_object.read()
-    pattern = re.compile(string_regexp)
-    strings = pattern.findall(data)
-    """
 
 
-
-def scan_file(path):
+def scan_file(path: str):
     # scan a file to determine if it is malicious or benign
     if not os.path.exists("saved_detector.pkl"):
         print("It appears you haven't trained a detector yet!  Do this before scanning files.")
@@ -73,7 +62,7 @@ def scan_file(path):
     else:
         print("It appears this file is benign.", result_proba)
 
-def scan_directory(path):
+def scan_directory(path: str):
     file_paths = []
     # Walk through the directory and its subdirectories
     for root, _, files in os.walk(path):
@@ -83,9 +72,9 @@ def scan_directory(path):
     for element in file_paths:
         scan_file(element)
 
-def train_detector(benign_path,malicious_path,hasher):
+def train_detector(benign_path: str, malicious_path: str, hasher: FeatureHasher):
     # train the detector on the specified training data
-    def get_training_paths(directory):
+    def get_training_paths(directory: str):
         targets = []
         for path in os.listdir(directory):
             targets.append(os.path.join(directory,path))
@@ -98,7 +87,7 @@ def train_detector(benign_path,malicious_path,hasher):
     classifier.fit(X,y)
     pickle.dump((classifier,hasher),open("saved_detector.pkl","wb+"))
 
-def cv_evaluate(X,y,hasher):
+def cv_evaluate(X, y, hasher: FeatureHasher):
     # use cross-validation to evaluate our model
     import random
     from sklearn import metrics
@@ -137,7 +126,7 @@ def cv_evaluate(X,y,hasher):
     pyplot.grid()
     pyplot.show()
 
-def get_training_data(benign_path,malicious_path,hasher):
+def get_training_data(benign_path: str,malicious_path: str,hasher: FeatureHasher):
     def get_training_paths(directory):
         targets = []
         for path in os.listdir(directory):
@@ -149,27 +138,28 @@ def get_training_data(benign_path,malicious_path,hasher):
     y = [1 for i in range(len(malicious_paths))] + [0 for i in range(len(benign_paths))]
     return X, y
 
-parser = argparse.ArgumentParser("get windows object vectors for files")
-parser.add_argument("--malware_paths",default=None,help="Path to malware training files")
-parser.add_argument("--benignware_paths",default=None,help="Path to benignware training files")
-parser.add_argument("--scan_file_path",default=None,help="File to scan")
-parser.add_argument("--scan_dir_path",default=None,help="Directory to scan")
-parser.add_argument("--evaluate",default=False,action="store_true",help="Perform cross-validation")
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser("get windows object vectors for files")
+    parser.add_argument("--malware_paths",default=None,help="Path to malware training files")
+    parser.add_argument("--benignware_paths",default=None,help="Path to benignware training files")
+    parser.add_argument("--scan_file_path",default=None,help="File to scan")
+    parser.add_argument("--scan_dir_path",default=None,help="Directory to scan")
+    parser.add_argument("--evaluate",default=False,action="store_true",help="Perform cross-validation")
 
-args = parser.parse_args()
+    args = parser.parse_args()
 
-hasher = FeatureHasher(20000)
-if args.malware_paths and args.benignware_paths and not args.evaluate:
-    train_detector(args.benignware_paths,args.malware_paths,hasher)
-elif args.scan_file_path:
-    scan_file(args.scan_file_path)
-elif args.scan_dir_path:
-    scan_directory(args.scan_dir_path)
-elif args.malware_paths and args.benignware_paths and args.evaluate:
-    X, y = get_training_data(args.benignware_paths,args.malware_paths,hasher)
-    cv_evaluate(X,y,hasher)
-else:
-    print("[*] You did not specify a path to scan," \
-        " nor did you specify paths to malicious and benign training files" \
-        " please specify one of these to use the detector.\n")
-    parser.print_help()
+    hasher = FeatureHasher(20000)
+    if args.malware_paths and args.benignware_paths and not args.evaluate:
+        train_detector(args.benignware_paths,args.malware_paths,hasher)
+    elif args.scan_file_path:
+        scan_file(args.scan_file_path)
+    elif args.scan_dir_path:
+        scan_directory(args.scan_dir_path)
+    elif args.malware_paths and args.benignware_paths and args.evaluate:
+        X, y = get_training_data(args.benignware_paths,args.malware_paths,hasher)
+        cv_evaluate(X,y,hasher)
+    else:
+        print("[*] You did not specify a path to scan," \
+            " nor did you specify paths to malicious and benign training files" \
+            " please specify one of these to use the detector.\n")
+        parser.print_help()
