@@ -83,7 +83,7 @@ profile_default/
 ipython_config.py
 
 # pyenv
-#   For a library or package, you might want to ignore these files since the code is
+#   For a library or package, you might want to ignore these files since the train_model is
 #   intended to run in multiple environments; otherwise, check them in:
 # .python-version
 
@@ -153,7 +153,7 @@ cython_debug/
 shared_code_analysis/data
 Neural_network_malware_detector_ch11/chapter_11_UNDER_40/venv
 Neural_network_malware_detector_ch11/chapter_11_UNDER_40/data
-ML_detectors/data
+detectors/data
 malware_network_apt1/data
 .idea
 download/temp
