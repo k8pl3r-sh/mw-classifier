@@ -36,7 +36,7 @@ MANIFEST
 pip-log.txt
 pip-delete-this-directory.txt
 
-# Unit test / coverage reports
+# Unit samples / coverage reports
 htmlcov/
 .tox/
 .nox/
@@ -156,7 +156,7 @@ Neural_network_malware_detector_ch11/chapter_11_UNDER_40/data
 ML_detectors/data
 malware_network_apt1/data
 .idea
-download_samples/malware_bazaar/temp
+download/temp
 *.dot # remove dot graph
 *.yml
 config.yml
