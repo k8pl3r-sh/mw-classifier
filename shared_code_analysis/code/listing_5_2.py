@@ -14,7 +14,7 @@ All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright
+    * Redistributions of source train_model must retain the above copyright
       notice, this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above copyright
       notice, this list of conditions and the following disclaimer in the
@@ -138,7 +138,7 @@ def search_sample(path):
     neighbors = list(set(neighbors))
     neighbors.sort(key=lambda entry:entry[1],reverse=True)
     print ""
-    print "Sample name".ljust(64),"Shared code estimate"
+    print "Sample name".ljust(64),"Shared train_model estimate"
     for neighbor, similarity in neighbors:
         short_neighbor = neighbor.split("/")[-1]
         comments = db[neighbor]['comments']
@@ -149,7 +149,7 @@ def search_sample(path):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description="""
-Simple code-sharing search system which allows you to build up a database of malware samples (indexed by file paths) and
+Simple train_model-sharing search system which allows you to build up a database of malware samples (indexed by file paths) and
 then search for similar samples given some new sample
 """
     )

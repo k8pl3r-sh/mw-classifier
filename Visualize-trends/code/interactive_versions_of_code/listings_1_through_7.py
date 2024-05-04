@@ -1,5 +1,5 @@
 """
-This code is meant to be run line by line in an interactive python console, so that that output is automatically
+This train_model is meant to be run line by line in an interactive python console, so that that output is automatically
 printed to the screen.
 """
 import pandas
