@@ -158,5 +158,4 @@ malware-similarity/data
 .idea
 malware-downloader/temp
 *.dot # remove dot graph
-*.yml
 config.yml
