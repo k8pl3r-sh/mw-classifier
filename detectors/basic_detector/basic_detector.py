@@ -3,7 +3,6 @@ import sys
 import pickle
 import argparse
 import re
-import pefile
 import numpy
 from sklearn.feature_extraction import FeatureHasher
 
