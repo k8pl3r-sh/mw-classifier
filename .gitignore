@@ -153,10 +153,10 @@ cython_debug/
 shared_code_analysis/data
 Neural_network_malware_detector_ch11/chapter_11_UNDER_40/venv
 Neural_network_malware_detector_ch11/chapter_11_UNDER_40/data
-detectors/data
-malware_network_apt1/data
+malware-detectors/data
+malware-similarity/data
 .idea
-download/temp
+malware-downloader/temp
 *.dot # remove dot graph
 *.yml
 config.yml
