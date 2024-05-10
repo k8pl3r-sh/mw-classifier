@@ -1,5 +1,6 @@
 from scapy.all import *
 
+
 def detect_dga(packets):
     # A tester
     # https://cylab.be/blog/245/network-traffic-analysis-with-python-scapy-and-some-machine-learning
@@ -14,7 +15,7 @@ def detect_dga(packets):
             ip = packet[IP].dst
             counts[ip] = counts.get(ip, 0) + 1
 
-    threshold = 100 # faire varier le threshold
+    threshold = 100  # faire varier le threshold
 
     print("+ Create list of suspicious IP addresses ...")
     suspicious = []
@@ -28,8 +29,9 @@ def detect_dga(packets):
 def escape_label(label):
     # Escape characters that may cause syntax errors in DOT graph
     label = label.replace('"', r'\"')  # Escape double quotes
-    #label = label.replace("'", r"\'")  # Escape single quotes
+    # label = label.replace("'", r"\'")  # Escape single quotes
     return label
+
 
 def get_hostname(ip):
     try:
@@ -66,7 +68,7 @@ def build_ip_dot_graph(pcap_file, output_file):
 
                 # TODO : add label like [label="ssh,telnet"] on edges for protocols
 
-                # Print hostname if different than IP
+                # Print hostname if different from IP
                 if src_hostname:
                     if dst_hostname:
                         dot_graph += f'"{src_ip} ({src_hostname})" -> "{dst_ip} ({src_hostname})";\n'
@@ -89,6 +91,8 @@ def build_ip_dot_graph(pcap_file, output_file):
 
 def get_dns_qry():
     ...
+
+
 """
 packets = PcapReader('poisoned_credentials.pcap') # create a generator, does NOT load the complete file in mem
 for packet in packets:

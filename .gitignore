@@ -156,6 +156,6 @@ Neural_network_malware_detector_ch11/chapter_11_UNDER_40/data
 malware-detectors/data
 malware-similarity/data
 .idea
-malware-downloader/temp
+downloader/temp
 *.dot # remove dot graph
 config.yml

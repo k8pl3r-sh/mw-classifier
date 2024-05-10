@@ -4,6 +4,7 @@ import argparse
 
 DEFAULT_FILE = "snake_deluxe.exe"
 
+
 def extract_iat(filename):
     pe = pefile.PE(filename)
     pe.parse_data_directories()

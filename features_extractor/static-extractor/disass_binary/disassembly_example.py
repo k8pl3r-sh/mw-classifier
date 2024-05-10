@@ -20,4 +20,4 @@ disassembler = Cs(CS_ARCH_X86, CS_MODE_32)
 
 # disassemble the train_model
 for instruction in disassembler.disasm(binary_code, entrypoint_address):
-    print "%s\t%s" %(instruction.mnemonic, instruction.op_str)
+    print("%s\t%s" % (instruction.mnemonic, instruction.op_str))
