@@ -159,3 +159,4 @@ malware-similarity/data
 downloader/temp
 *.dot # remove dot graph
 config.yml
+config.yml
