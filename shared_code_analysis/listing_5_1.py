@@ -61,11 +61,14 @@ def getstrings(fullpath):
 
 def pecheck(fullpath):
     """
-    Do a cursory sanity check to make sure 'fullpath' is
-    a Windows PE executable (PE executables start with the
-    two bytes 'MZ')
+    Check if a file is a PE (Portable Executable) by reading the first two bytes.
     """
-    return open(fullpath).read(2) == "MZ"
+    try:
+        with open(fullpath, 'rb') as f:
+            return f.read(2) == b'MZ'  # Read as binary and compare to binary 'MZ'
+    except IOError:
+        return False
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -104,7 +107,7 @@ if __name__ == '__main__':
     # get and store the strings for all of the malware PE files
     for path in malware_paths:
         attributes = getstrings(path)
-        print "Extracted {0} attributes from {1} ...".format(len(attributes),path)
+        print("Extracted {0} attributes from {1} ...".format(len(attributes),path))
         malware_attributes[path] = attributes
 
         # add each malware file to the graph
@@ -118,7 +121,7 @@ if __name__ == '__main__':
 
         # if the jaccard distance is above the threshold add an edge
         if jaccard_index > args.threshold:
-            print malware1,malware2,jaccard_index
+            print(malware1,malware2,jaccard_index)
             graph.add_edge(malware1,malware2,penwidth=1+(jaccard_index-args.threshold)*10)
 
     # write the graph to disk so we can visualize it

@@ -1,12 +1,12 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import argparse
 import os
-import murmur
+import mmh3  # Updated import
 import shelve
 import sys
-from numpy import *
-from listing_5_1 import *
+from numpy import array
+from listing_5_1 import getstrings, pecheck  # Ensure these functions are defined elsewhere
 
 """
 Copyright (c) 2015, Joshua Saxe
@@ -35,7 +35,6 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-
 NUM_MINHASHES = 256
 NUM_SKETCHES = 8
 
@@ -46,7 +45,7 @@ def wipe_database():
     directory as the actual Python script.  'wipe_database' deletes this file
     effectively reseting the system.
     """
-    dbpath = "/".join(__file__.split('/')[:-1] + ['samples.db'])
+    dbpath = os.path.join(os.path.dirname(__file__), 'samples.db')
     os.system("rm -f {0}".format(dbpath))
 
 def get_database():
@@ -54,8 +53,8 @@ def get_database():
     Helper function to retrieve the 'shelve' database, which is a simple
     key value store.
     """
-    dbpath = "/".join(__file__.split('/')[:-1] + ['samples.db'])
-    return shelve.open(dbpath,protocol=2,writeback=True)
+    dbpath = os.path.join(os.path.dirname(__file__), 'samples.db')
+    return shelve.open(dbpath, protocol=2, writeback=True)
 
 def minhash(attributes):
     """
@@ -68,12 +67,12 @@ def minhash(attributes):
     sketches = []
     for i in range(NUM_MINHASHES):
         minhashes.append(
-            min([murmur.string_hash(`attribute`,i) for attribute in attributes])
+            min([mmh3.hash(attribute, i) for attribute in attributes])
         )
-    for i in xrange(0,NUM_MINHASHES,NUM_SKETCHES):
-        sketch = murmur.string_hash(`minhashes[i:i+NUM_SKETCHES]`)
+    for i in range(0, NUM_MINHASHES, NUM_SKETCHES):
+        sketch = mmh3.hash(''.join(map(str, minhashes[i:i+NUM_SKETCHES])))
         sketches.append(sketch)
-    return array(minhashes),sketches
+    return array(minhashes), sketches
 
 def store_sample(path):
     """
@@ -82,20 +81,20 @@ def store_sample(path):
     """
     db = get_database()
     attributes = getstrings(path)
-    minhashes,sketches = minhash(attributes)
+    minhashes, sketches = minhash(attributes)
 
     for sketch in sketches:
         sketch = str(sketch)
-        if not sketch in db:
+        if sketch not in db:
             db[sketch] = set([path])
         else:
             obj = db[sketch]
             obj.add(path)
             db[sketch] = obj
-        db[path] = {'minhashes':minhashes,'comments':[]}
+        db[path] = {'minhashes': minhashes, 'comments': []}
         db.sync()
 
-    print "Extracted {0} attributes from {1} ...".format(len(attributes),path)
+    print(f"Extracted {len(attributes)} attributes from {path} ...")
 
 def comment_sample(path):
     """
@@ -105,14 +104,14 @@ def comment_sample(path):
     knowledge about their malware database.
     """
     db = get_database()
-    comment = raw_input("Enter your comment:")
-    if not path in db:
+    comment = input("Enter your comment:")
+    if path not in db:
         store_sample(path)
     comments = db[path]['comments']
     comments.append(comment)
     db[path]['comments'] = comments
     db.sync()
-    print "Stored comment:",comment
+    print("Stored comment:", comment)
 
 def search_sample(path):
     """
@@ -121,56 +120,56 @@ def search_sample(path):
     """
     db = get_database()
     attributes = getstrings(path)
-    minhashes,sketches = minhash(attributes)
+    minhashes, sketches = minhash(attributes)
     neighbors = []
 
     for sketch in sketches:
         sketch = str(sketch)
 
-        if not sketch in db:
+        if sketch not in db:
             continue
 
         for neighbor_path in db[sketch]:
             neighbor_minhashes = db[neighbor_path]['minhashes']
             similarity = (neighbor_minhashes == minhashes).sum() / float(NUM_MINHASHES)
-            neighbors.append((neighbor_path,similarity))
+            neighbors.append((neighbor_path, similarity))
 
     neighbors = list(set(neighbors))
-    neighbors.sort(key=lambda entry:entry[1],reverse=True)
-    print ""
-    print "Sample name".ljust(64),"Shared train_model estimate"
+    neighbors.sort(key=lambda entry: entry[1], reverse=True)
+    print("")
+    print("Sample name".ljust(64), "Shared minhash estimate")
     for neighbor, similarity in neighbors:
         short_neighbor = neighbor.split("/")[-1]
         comments = db[neighbor]['comments']
-        print str("[*] "+short_neighbor).ljust(64),similarity
+        print(str("[*] " + short_neighbor).ljust(64), similarity)
         for comment in comments:
-            print "\t[comment]",comment
+            print("\t[comment]", comment)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description="""
-Simple train_model-sharing search system which allows you to build up a database of malware samples (indexed by file paths) and
+Simple minhash-sharing search system which allows you to build up a database of malware samples (indexed by file paths) and
 then search for similar samples given some new sample
 """
     )
 
     parser.add_argument(
-        "-l","--load",dest="load",default=None,
+        "-l", "--load", dest="load", default=None,
         help="Path to directory containing malware, or individual malware file, to store in database"
     )
 
     parser.add_argument(
-        "-s","--search",dest="search",default=None,
+        "-s", "--search", dest="search", default=None,
         help="Individual malware file to perform similarity search on"
     )
 
     parser.add_argument(
-        "-c","--comment",dest="comment",default=None,
+        "-c", "--comment", dest="comment", default=None,
         help="Comment on a malware sample path"
     )
 
     parser.add_argument(
-        "-w","--wipe",action="store_true",default=False,
+        "-w", "--wipe", action="store_true", default=False,
         help="Wipe sample database"
     )
 
@@ -179,17 +178,17 @@ then search for similar samples given some new sample
     if len(sys.argv) == 1:
         parser.print_help()
     if args.load:
-        malware_paths = [] # where we'll store the malware file paths
-        malware_attributes = dict() # where we'll store the malware strings
- 
+        malware_paths = []  # where we'll store the malware file paths
+        malware_attributes = dict()  # where we'll store the malware strings
+
         for root, dirs, paths in os.walk(args.load):
             # walk the target directory tree and store all of the file paths
             for path in paths:
-                full_path = os.path.join(root,path)
+                full_path = os.path.join(root, path)
                 malware_paths.append(full_path)
 
         # filter out any paths that aren't PE files
-        malware_paths = filter(pecheck, malware_paths)
+        malware_paths = list(filter(pecheck, malware_paths))
 
         # get and store the strings for all of the malware PE files
         for path in malware_paths:
