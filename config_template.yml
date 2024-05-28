@@ -1,0 +1,6 @@
+virustotal:
+  api_key: ["xxxxxxxxxxxxxxxxxxxx", "xxxxxxxxxxxxxxxxxxxxx"]
+log:
+  path: "/home/k8pl3r/Documents/GitHub/ml-malware-detection/debug.log"
+  mode: ["file", "stream", "journal"]
+  logger: {}
