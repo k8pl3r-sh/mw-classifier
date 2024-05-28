@@ -38,6 +38,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 NUM_MINHASHES = 256
 NUM_SKETCHES = 8
 
+
 def wipe_database():
     """
     This problem uses the python standard library 'shelve' database to persist
@@ -48,6 +49,7 @@ def wipe_database():
     dbpath = os.path.join(os.path.dirname(__file__), 'samples.db')
     os.system("rm -f {0}".format(dbpath))
 
+
 def get_database():
     """
     Helper function to retrieve the 'shelve' database, which is a simple
@@ -55,6 +57,7 @@ def get_database():
     """
     dbpath = os.path.join(os.path.dirname(__file__), 'samples.db')
     return shelve.open(dbpath, protocol=2, writeback=True)
+
 
 def minhash(attributes):
     """
@@ -73,6 +76,7 @@ def minhash(attributes):
         sketch = mmh3.hash(''.join(map(str, minhashes[i:i+NUM_SKETCHES])))
         sketches.append(sketch)
     return array(minhashes), sketches
+
 
 def store_sample(path):
     """
@@ -96,6 +100,7 @@ def store_sample(path):
 
     print(f"Extracted {len(attributes)} attributes from {path} ...")
 
+
 def comment_sample(path):
     """
     Function that allows a user to comment on a sample.  The comment the
@@ -112,6 +117,7 @@ def comment_sample(path):
     db[path]['comments'] = comments
     db.sync()
     print("Stored comment:", comment)
+
 
 def search_sample(path):
     """
@@ -144,6 +150,7 @@ def search_sample(path):
         print(str("[*] " + short_neighbor).ljust(64), similarity)
         for comment in comments:
             print("\t[comment]", comment)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -182,7 +189,7 @@ then search for similar samples given some new sample
         malware_attributes = dict()  # where we'll store the malware strings
 
         for root, dirs, paths in os.walk(args.load):
-            # walk the target directory tree and store all of the file paths
+            # walk the target directory tree and store all the file paths
             for path in paths:
                 full_path = os.path.join(root, path)
                 malware_paths.append(full_path)
@@ -190,7 +197,7 @@ then search for similar samples given some new sample
         # filter out any paths that aren't PE files
         malware_paths = list(filter(pecheck, malware_paths))
 
-        # get and store the strings for all of the malware PE files
+        # get and store the strings for all the malware PE files
         for path in malware_paths:
             store_sample(path)
 

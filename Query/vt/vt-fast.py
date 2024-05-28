@@ -9,10 +9,12 @@ import yaml
 
 # TODO : check les différents hashs si fichier et Not Found
 
+
 def load_config(path: str) -> dict:
     with open(path, 'r') as f:
         config = yaml.safe_load(f)
     return config
+
 
 def list_files_directory(directory: str, exclusion_path=None) -> list[str]:
     file_paths = []
@@ -26,6 +28,7 @@ def list_files_directory(directory: str, exclusion_path=None) -> list[str]:
                 file_path = os.path.join(root, file_)
                 file_paths.append(file_path)
     return file_paths
+
 
 class QueryVT(object):
     round_index = 0
@@ -45,7 +48,7 @@ class QueryVT(object):
         else:
             return result["data"]["attributes"]
 
-    def query_hash(self, hash: str) -> binary:
+    def query_hash(self, hash: str) -> Binary:
         # Query to the API
         # Submit
         self._rotate_key()
@@ -57,9 +60,9 @@ class QueryVT(object):
         response = requests.get(self.url, headers=self.headers)
         result = self._response_handler(response)
         if result:
-            return binary(**result)
+            return Binary(**result)
 
-    def query_domain(self, domain_str) -> domain:
+    def query_domain(self, domain_str) -> Domain:
         # Query to the API
         self._rotate_key()
         self.headers = {
@@ -70,9 +73,9 @@ class QueryVT(object):
         response = requests.get(self.url, headers=self.headers)
         result = self._response_handler(response)
         if result:
-            return domain(**result)
+            return Domain(**result)
 
-    def query_ip(self, ip_str) -> ip:
+    def query_ip(self, ip_str) -> Ip:
         self._rotate_key()
         self.headers = {
             "accept": "application/json",
@@ -82,17 +85,15 @@ class QueryVT(object):
         response = requests.get(self.url, headers=self.headers)
         result = self._response_handler(response)
         if result:
-            return ip(**result)
+            return Ip(**result)
 
     @staticmethod
     def query_directory(list_path: list) -> list:
         list_ = []
         for element in list_path:
-            #list_.append()
+            # list_.append()
             pass
         return list_
-
-
 
     def _rotate_key(self):
         # Rotate the API key to stay under the RateLimit of the API
@@ -131,7 +132,6 @@ def cli_parser() -> dict:
     parser.add_argument('-e', dest='exclude_path', metavar='exclude', help='Specify path to exclude')
     # Parse the command-line arguments
     args = parser.parse_args()
-
 
     # Handle the parsed arguments
     # TODO : à virer, juste pour du debug

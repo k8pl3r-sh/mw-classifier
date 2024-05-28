@@ -8,35 +8,9 @@ import sys
 from numpy import array
 from listing_5_1 import getstrings, pecheck  # Ensure these functions are defined elsewhere
 
-"""
-Copyright (c) 2015, Joshua Saxe
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-    * Redistributions of source train_model must retain the above copyright
-      notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-      notice, this list of conditions and the following disclaimer in the
-      documentation and/or other materials provided with the distribution.
-    * Neither the name 'Joshua Saxe' nor the
-      names of its contributors may be used to endorse or promote products
-      derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL JOSHUA SAXE BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-"""
-
 NUM_MINHASHES = 256
 NUM_SKETCHES = 8
+
 
 def wipe_database():
     """
@@ -48,6 +22,7 @@ def wipe_database():
     dbpath = os.path.join(os.path.dirname(__file__), 'samples.db')
     os.system("rm -f {0}".format(dbpath))
 
+
 def get_database():
     """
     Helper function to retrieve the 'shelve' database, which is a simple
@@ -55,6 +30,7 @@ def get_database():
     """
     dbpath = os.path.join(os.path.dirname(__file__), 'samples.db')
     return shelve.open(dbpath, protocol=2, writeback=True)
+
 
 def minhash(attributes):
     """
@@ -73,6 +49,7 @@ def minhash(attributes):
         sketch = mmh3.hash(''.join(map(str, minhashes[i:i+NUM_SKETCHES])))
         sketches.append(sketch)
     return array(minhashes), sketches
+
 
 def store_sample(path):
     """
@@ -96,6 +73,7 @@ def store_sample(path):
 
     print(f"Extracted {len(attributes)} attributes from {path} ...")
 
+
 def comment_sample(path):
     """
     Function that allows a user to comment on a sample.  The comment the
@@ -112,6 +90,7 @@ def comment_sample(path):
     db[path]['comments'] = comments
     db.sync()
     print("Stored comment:", comment)
+
 
 def search_sample(path):
     """
@@ -144,6 +123,7 @@ def search_sample(path):
         print(str("[*] " + short_neighbor).ljust(64), similarity)
         for comment in comments:
             print("\t[comment]", comment)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -182,7 +162,7 @@ then search for similar samples given some new sample
         malware_attributes = dict()  # where we'll store the malware strings
 
         for root, dirs, paths in os.walk(args.load):
-            # walk the target directory tree and store all of the file paths
+            # walk the target directory tree and store all the file paths
             for path in paths:
                 full_path = os.path.join(root, path)
                 malware_paths.append(full_path)
@@ -190,7 +170,7 @@ then search for similar samples given some new sample
         # filter out any paths that aren't PE files
         malware_paths = list(filter(pecheck, malware_paths))
 
-        # get and store the strings for all of the malware PE files
+        # get and store the strings for all the malware PE files
         for path in malware_paths:
             store_sample(path)
 

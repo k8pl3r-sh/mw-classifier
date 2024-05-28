@@ -5,38 +5,9 @@ import os
 import networkx
 from networkx.drawing.nx_pydot import write_dot
 import itertools
-import pprint
-
-"""
-Copyright (c) 2015, Joshua Saxe
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-    * Redistributions of source train_model must retain the above copyright
-      notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-      notice, this list of conditions and the following disclaimer in the
-      documentation and/or other materials provided with the distribution.
-    * Neither the name 'Joshua Saxe' nor the
-      names of its contributors may be used to endorse or promote products
-      derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL JOSHUA SAXE BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-"""
 
 
-
-def jaccard(set1,set2):
+def jaccard(set1, set2):
     """
     Compute the Jaccard distance between two sets by taking
     their intersection, union and then dividing the number
@@ -49,6 +20,7 @@ def jaccard(set1,set2):
     union_length = float(len(union))
     return intersection_length / union_length
 
+
 def getstrings(fullpath):
     """
     Extract strings from the binary indicated by the 'fullpath'
@@ -58,6 +30,7 @@ def getstrings(fullpath):
     strings = os.popen("strings '{0}'".format(fullpath)).read()
     strings = set(strings.split("\n"))
     return strings
+
 
 def pecheck(fullpath):
     """
@@ -86,43 +59,43 @@ if __name__ == '__main__':
     )
 
     parser.add_argument(
-        "--jaccard_index_threshold","-j",dest="threshold",type=float,
-        default=0.8,help="Threshold above which to create an 'edge' between samples"
+        "--jaccard_index_threshold", "-j", dest="threshold", type=float,
+        default=0.8, help="Threshold above which to create an 'edge' between samples"
     )
 
     args = parser.parse_args()
-    malware_paths = [] # where we'll store the malware file paths
-    malware_attributes = dict() # where we'll store the malware strings
-    graph = networkx.Graph() # the similarity graph
+    malware_paths = []  # where we'll store the malware file paths
+    malware_attributes = dict()  # where we'll store the malware strings
+    graph = networkx.Graph()  # the similarity graph
 
     for root, dirs, paths in os.walk(args.target_directory):
-        # walk the target directory tree and store all of the file paths
+        # walk the target directory tree and store all the file paths
         for path in paths:
-            full_path = os.path.join(root,path)
+            full_path = os.path.join(root, path)
             malware_paths.append(full_path)
 
     # filter out any paths that aren't PE files
     malware_paths = filter(pecheck, malware_paths)
 
-    # get and store the strings for all of the malware PE files
+    # get and store the strings for all the malware PE files
     for path in malware_paths:
         attributes = getstrings(path)
-        print("Extracted {0} attributes from {1} ...".format(len(attributes),path))
+        print("Extracted {0} attributes from {1} ...".format(len(attributes), path))
         malware_attributes[path] = attributes
 
         # add each malware file to the graph
-        graph.add_node(path,label=os.path.split(path)[-1][:10])
+        graph.add_node(path, label=os.path.split(path)[-1][:10])
 
     # iterate through all pairs of malware
-    for malware1,malware2 in itertools.combinations(malware_paths,2):
+    for malware1, malware2 in itertools.combinations(malware_paths, 2):
 
         # compute the jaccard distance for the current pair
-        jaccard_index = jaccard(malware_attributes[malware1],malware_attributes[malware2])
+        jaccard_index = jaccard(malware_attributes[malware1], malware_attributes[malware2])
 
         # if the jaccard distance is above the threshold add an edge
         if jaccard_index > args.threshold:
-            print(malware1,malware2,jaccard_index)
-            graph.add_edge(malware1,malware2,penwidth=1+(jaccard_index-args.threshold)*10)
+            print(malware1, malware2, jaccard_index)
+            graph.add_edge(malware1, malware2, penwidth=1+(jaccard_index-args.threshold)*10)
 
     # write the graph to disk so we can visualize it
-    write_dot(graph,args.output_dot_file)
+    write_dot(graph, args.output_dot_file)

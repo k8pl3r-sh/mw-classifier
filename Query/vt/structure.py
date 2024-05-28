@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 
 @dataclass(slots=True)
-class binary:
+class Binary:
     """Binary structure"""
     pdf_info: dict = None
     magic: str = None
@@ -53,7 +53,7 @@ class binary:
 
 
 @dataclass(slots=True)
-class domain:
+class Domain:
     """Domain structure"""
     categories: dict = None
     last_https_certificate: dict = None
@@ -76,8 +76,9 @@ class domain:
     last_dns_records: str = None
     last_update_date: int = None
 
+
 @dataclass(slots=True)
-class ip:
+class Ip:
     """IP structure"""
     last_analysis_results: dict = None
     total_votes: dict = None
