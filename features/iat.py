@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 import pefile
-import argparse
 
 DEFAULT_FILE = "snake_deluxe.exe"
 
@@ -18,6 +17,7 @@ def extract_iat(filename):
 
 
 if __name__ == "__main__":
+    import argparse
     parser = argparse.ArgumentParser(description='Extract Import Address Table (IAT) from a PE file.')
     parser.add_argument('filename', nargs='?', default=DEFAULT_FILE, help='Path to the PE file (default: %(default)s)')
 
