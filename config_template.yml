@@ -4,3 +4,7 @@ log:
   path: "/home/k8pl3r/Documents/GitHub/ml-malware-detection/debug.log"
   mode: ["file", "stream", "journal"]
   logger: {}
+neo4j:
+  uri: "neo4j://localhost:7687"
+  user: ""
+  password: ""
