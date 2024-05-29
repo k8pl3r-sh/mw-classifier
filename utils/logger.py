@@ -39,16 +39,16 @@ class PlainFormatter(logging.Formatter):
 
 
 class Log(object):
-    def __init__(self, name, config):
+    def __init__(self, name, config_):
         """
         Log handler
         Parameters
         ----------
         name : String, name of the module
-        config : config object containing all application parameters
+        config_ : config object containing all application parameters
         """
         self.name = name
-        self.config = config
+        self.config = config_
         self.path = self.config['log']['path']
 
         if self.name not in self.config['log']['logger'].keys():
