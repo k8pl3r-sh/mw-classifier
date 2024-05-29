@@ -127,8 +127,8 @@ def search_sample(path):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description="""
-Simple minhash-sharing search system which allows you to build up a database of malware samples (indexed by file paths) and
+        description="""Simple minhash-sharing search system which allows you to build up
+        a database of malware samples (indexed by file paths) and
 then search for similar samples given some new sample
 """
     )

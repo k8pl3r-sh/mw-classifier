@@ -38,7 +38,7 @@ class QueryVT(object):
         self.response = None
 
     @staticmethod
-    def _response_handler(response: dict) -> dict:
+    def _response_handler(response: dict) -> dict | None:
         # Handle the response from the API
         result = json.loads(response.text)
 
@@ -90,8 +90,8 @@ class QueryVT(object):
     @staticmethod
     def query_directory(list_path: list) -> list:
         list_ = []
-        for element in list_path:
-            # list_.append()
+        for file in list_path:
+            list_.append(file)
             pass
         return list_
 
