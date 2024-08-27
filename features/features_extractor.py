@@ -46,3 +46,7 @@ class FeaturesExtractor:
             extracted_features[feature] = self.features[feature].extract(filename)
 
         return extracted_features
+
+    def hash_features(self):
+        # Reprendre le code du FeatureHasher du basic detector
+        ...

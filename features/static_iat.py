@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 
-import pefile
+
 from utils.logger import Log
-import lief
+import lief # https://lief.re/doc/latest/tutorials/01_play_with_formats.html
 
 DEFAULT_FILE = "snake_deluxe.exe"
 
@@ -26,23 +26,7 @@ class StaticIat:
 
         """
         # TODO : check PE ici et faire les différents cas
-        pe = pefile.PE(filename)
         bin = binary = lief.parse(filename)
-        """
-        pe.parse_data_directories()
-        iat = []
-        extracted = {}
-        for entry in pe.DIRECTORY_ENTRY_IMPORT:
-            for imp in entry.imports:
-                try:
-                    iat.append(imp.name.decode("utf-8"))
-                except:
-                    self.log.warn(f"Error decoding import name of the PE file : {imp.name}")
-            extracted[entry.dll.decode("utf-8")] = iat
-        # TODO format lib:function
-        self.log.debug(f"Extracted {len(extracted)} IAT from {filename}")
-        return set(extracted)
-        """
         iat = []
         extracted = {}
         if binary is not None and binary.has_imports:
