@@ -4,6 +4,7 @@ from utils.logger import Log
 
 DEFAULT_FILE = "snake_deluxe.exe"
 
+
 class Strings:
     def __init__(self, config: dict):
         self.log = Log("Strings", config)

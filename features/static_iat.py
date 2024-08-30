@@ -2,7 +2,7 @@
 
 
 from utils.logger import Log
-import lief # https://lief.re/doc/latest/tutorials/01_play_with_formats.html
+import lief  # https://lief.re/doc/latest/tutorials/01_play_with_formats.html
 
 DEFAULT_FILE = "snake_deluxe.exe"
 
