@@ -64,7 +64,7 @@ class Neo4jGraph:
     def create_node(tx: Transaction, path: str):
         query = (
             "CREATE (m:Malware {path: $path}) "
-            "RETURN id(m)"
+            "RETURN elementId(m)"
         )
         tx.run(query, path=path)
 
