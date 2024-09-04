@@ -1,10 +1,16 @@
 # ml-malware
  Machine Learning research on malware detection and attribution
 
+All the work is based on the amazing book [Malware Data Science](Malware.pdf) !
+
+
+
 ## Installation
 
 `sudo apt install libsystemd-dev` pour install systemd
 -> installation des requirements
+
+To avoid any issue risking a detonation, makes the `SAMPLES` folder in read only mode.
 
 #### Datasets
 
@@ -24,6 +30,11 @@ Tree :
   See C2-Hunter repository in order to download other samples (ThreatFox, VT..)
 - shared_code_analysis : scripts to train a model on a dataset and then detect similarities with a submited sample
 - 
+
+## ML functions overview
+
+**Jaccard index** :
+
 
 ## Similarity Engine
 
