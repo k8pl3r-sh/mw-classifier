@@ -6,7 +6,6 @@ import mmh3  # Updated import
 import shelve
 import sys
 from numpy import array
-from listing_5_1 import getstrings, pecheck  # Ensure these functions are defined elsewhere
 
 """
 Copyright (c) 2015, Joshua Saxe
@@ -57,6 +56,27 @@ def get_database():
     """
     dbpath = os.path.join(os.path.dirname(__file__), 'samples.db')
     return shelve.open(dbpath, protocol=2, writeback=True)
+
+def getstrings(fullpath):
+    """
+    Extract strings from the binary indicated by the 'fullpath'
+    parameter, and then return the set of unique strings in
+    the binary.
+    """
+    strings = os.popen("strings '{0}'".format(fullpath)).read()
+    strings = set(strings.split("\n"))
+    return strings
+
+
+def pecheck(fullpath):
+    """
+    Check if a file is a PE (Portable Executable) by reading the first two bytes.
+    """
+    try:
+        with open(fullpath, 'rb') as f:
+            return f.read(2) == b'MZ'  # Read as binary and compare to binary 'MZ'
+    except IOError:
+        return False
 
 
 def minhash(attributes):
@@ -155,7 +175,7 @@ def search_sample(path):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description="""
-Simple minhash-sharing search system which allows you to build up a database of malware samples (indexed by file paths) and
+Simple sharing search system which allows you to build up a database of malware samples (indexed by file paths) and
 then search for similar samples given some new sample
 """
     )
