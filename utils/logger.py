@@ -50,12 +50,14 @@ class Log(object):
         self.name = name
         self.config = config_
         self.path = self.config['log']['path']
+        self.level = self.config['log']['level']
 
         if self.name not in self.config['log']['logger'].keys():
             # Add a custom formatter
             logging._defaultFormatter = logging.Formatter("%(message)s")
             logger = logging.getLogger(self.name)
-            logger.setLevel(logging.INFO)
+            log_level = getattr(logging, self.config["log"]["level"], logging.INFO)  # If can't extract, default t INFO level
+            logger.setLevel(log_level)
 
             # Create formatters
             color_formatter = LoggingFormatter()
