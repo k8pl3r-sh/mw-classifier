@@ -40,7 +40,7 @@ Tree :
 
 Based on a dataset (here APT1), makes graph of similarity between malware samples which can be associated as families.
 
-Start it with `python3 main.py`
+Start it with `python3 main.py`, the Neo4J docker is started with Python code !
 
 ## Malware detector
 
