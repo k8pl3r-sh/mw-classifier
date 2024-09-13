@@ -25,7 +25,6 @@ class FeaturesExtractor:
         # n_features : number of features to hash : default : 1048576 : 2**20
         # input_typestr, default=’dict’, choices=[‘dict’, ‘pair’, ‘string’]
 
-
     def load_features(self) -> list[object]:
         features_files = [file for file in os.listdir(FEATURES_FOLDER) if file.endswith(".py")]
         features_files.remove(os.path.basename(__file__))  # remove features_extractor.py
@@ -67,15 +66,9 @@ class FeaturesExtractor:
             # Objet Strings de extracted_features : set {'a', 'b',...}
 
             #### Modified under ####
-            if 1: # feature == "Strings"
-                temp = self.features[feature].extract(filename)
-                hashed = self.hash_features(temp)
-                extracted_features[feature] = hashed
-            else:
-                extracted_features[feature] = self.features[feature].extract(filename)
-            #temp = self.features[feature].extract(filename)
-            #test = self.hash_features(temp)
-            #extracted_features[feature] = test
+            temp = self.features[feature].extract(filename)
+            hashed = self.hash_features(temp)
+            extracted_features[feature] = hashed
 
         # Exec Jaccard ensuite donc peut être un tableau ? TODO
         # Ensuite de ce dict on : malware_attributes[filename]
