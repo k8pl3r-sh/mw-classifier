@@ -2,11 +2,12 @@ from neo4j import Transaction
 import itertools
 from utils.logger import Log
 
-import subprocess
+from subprocess import run, CalledProcessError, PIPE
 from time import sleep
-import requests
+from requests import get, ConnectionError
 
 from sklearn.metrics import jaccard_score
+
 
 class Neo4jGraph:
     def __init__(self, config: dict):
@@ -28,13 +29,13 @@ class Neo4jGraph:
             Neo4j is up and running.
         """
         def run_command(command: str) -> str:
-            process = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            process = run(command, shell=True, check=True, stdout=PIPE, stderr=PIPE)
             return process.stdout.decode('utf-8')
 
         self.log.info("Removing existing Neo4j container...")
         try:
             run_command('docker rm --force neo4j')
-        except subprocess.CalledProcessError:
+        except CalledProcessError:
             self.log.info("No existing container to remove or failed to remove it.")
 
         self.log.info("Starting a new Neo4j container...")
@@ -43,10 +44,10 @@ class Neo4jGraph:
         self.log.info("Waiting for Neo4j to start...")
         while True:
             try:
-                response = requests.get("http://localhost:7474")
+                response = get("http://localhost:7474")
                 if response.status_code == 200:
                     break
-            except requests.ConnectionError:
+            except ConnectionError:
                 pass
             sleep(1)
 
@@ -73,7 +74,6 @@ class Neo4jGraph:
             "RETURN n"  # do not use id() as it is deprecied
         )
         tx.run(query)
-
 
     @staticmethod
     def create_relationship(tx: Transaction, path1: str, path2: str, weight: float):

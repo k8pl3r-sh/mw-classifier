@@ -27,7 +27,6 @@ class StaticIat:
         """
         # TODO : check PE ici et faire les différents cas
         bin = binary = lief.parse(filename)
-        iat = []
         extracted = {}
         if binary is not None and binary.has_imports:
             for entry in binary.imports:
