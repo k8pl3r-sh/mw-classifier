@@ -1,6 +1,5 @@
 from neo4j import Transaction
 import itertools
-#from utils.ml_functions import jaccard
 from utils.logger import Log
 
 import subprocess
@@ -62,25 +61,24 @@ class Neo4jGraph:
         return f"MATCH (a:Malware {{path: '{path1}'}}), (b:Malware {{path: '{path2}'}}) CREATE (a)-[:SIMILAR {{weight: {weight}}}]->(b);\n"
 
     @staticmethod
-    def create_node(tx: Transaction, path: str):
+    def create_node(tx: Transaction, label, properties: dict):
         # Old way
         # "CREATE (m:Malware {path: $path}) "
         #             "RETURN elementId(m)"
         # TODO : comment the following and refactor for generalization :
         # properties : dict with keys and values of properties names and values
-        # TODO: remove path which is useless
-        family = path.split("_")[0]
-        query = (
-            f"CREATE (n:Malware {{path: $path, Family: '{family}'}})"
-            "RETURN n" # do not use id() as it is deprecied
-        )
-        tx.run(query, path=path)
 
-    # noinspection PyTypeChecker
+        query = (
+            "CREATE (n:" + label + " {" + ", ".join([f"{key}: '{value}'" for key, value in properties.items()]) + "})"
+            "RETURN n"  # do not use id() as it is deprecied
+        )
+        tx.run(query)
+
+
     @staticmethod
     def create_relationship(tx: Transaction, path1: str, path2: str, weight: float):
         query = (
-            "MATCH (a:Malware {path: $path1}), (b:Malware {path: $path2}) "
+            "MATCH (a {path: $path1}), (b {path: $path2}) "
             "CREATE (a)-[:SIMILAR {weight: $weight}]->(b)"
         )
         tx.run(query, path1=path1, path2=path2, weight=weight)
