@@ -4,7 +4,7 @@ import itertools
 from utils.logger import Log
 
 import subprocess
-import time
+from time import sleep
 import requests
 
 from sklearn.metrics import jaccard_score
@@ -49,7 +49,7 @@ class Neo4jGraph:
                     break
             except requests.ConnectionError:
                 pass
-            time.sleep(1)
+            sleep(1)
 
         self.log.info("Neo4j is up and running.")
 
@@ -63,9 +63,16 @@ class Neo4jGraph:
 
     @staticmethod
     def create_node(tx: Transaction, path: str):
+        # Old way
+        # "CREATE (m:Malware {path: $path}) "
+        #             "RETURN elementId(m)"
+        # TODO : comment the following and refactor for generalization :
+        # properties : dict with keys and values of properties names and values
+        # TODO: remove path which is useless
+        family = path.split("_")[0]
         query = (
-            "CREATE (m:Malware {path: $path}) "
-            "RETURN elementId(m)"
+            f"CREATE (n:Malware {{path: $path, Family: '{family}'}})"
+            "RETURN n" # do not use id() as it is deprecied
         )
         tx.run(query, path=path)
 
