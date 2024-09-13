@@ -2,7 +2,8 @@
 #from scipy.spatial.distance import jaccard
 
 
-def jaccard(set1: set, set2: set, simplify=True) -> float:
+# enlever le s
+def jaccards(set1: set, set2: set, simplify=True) -> float:
     """
     #Compute the Jaccard index between two sets. The Jaccard index is a measure of similarity
     #between two sets and is defined as the size of the intersection divided by the size of the union of the sets.

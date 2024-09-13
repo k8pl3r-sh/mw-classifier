@@ -1,12 +1,13 @@
 from neo4j import Transaction
 import itertools
-from utils.ml_functions import jaccard
+#from utils.ml_functions import jaccard
 from utils.logger import Log
 
 import subprocess
 import time
 import requests
 
+from sklearn.metrics import jaccard_score
 
 class Neo4jGraph:
     def __init__(self, config: dict):
@@ -87,7 +88,17 @@ class Neo4jGraph:
                 cypher_file.write(Neo4jGraph.create_node_cypher(path))
 
             for malware1, malware2 in itertools.combinations(malware_paths, 2):
-                jaccard_index = jaccard(malware_attributes[malware1]['StaticIat'], malware_attributes[malware2]['StaticIat'])
+                """
+                Cette fonction ne devrait pas réaliser les relations mais les transmettre ?
+                TODO : généralisation à faire ici car StaticIat/Strings en hard
+                ATTENTION : changement dans le code pour le FeatureHasher 
+                -> Code fonctionnel avant de commit et de push
+                
+                1) Boucle for pour les différentes features
+                2) Moyenne entre les indices de Jaccard pour chaque feature ?
+                """
+                # jaccard replaced by jaccard_score
+                jaccard_index = jaccard_score(malware_attributes[malware1]['Strings'], malware_attributes[malware2]['Strings'])
                 if jaccard_index > threshold:
                     cypher_file.write(Neo4jGraph.create_relationship_cypher(malware1, malware2, jaccard_index))
 
