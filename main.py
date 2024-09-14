@@ -15,4 +15,4 @@ if __name__ == "__main__":
     end_time = time()
     elapsed_time = end_time - start_time
     print(f"Elapsed time: {elapsed_time:.2f} seconds")
-    sim.similarity_matrix_heatmap('similarity_matrix_strings.png')
+    # sim.similarity_matrix_heatmap('similarity_matrix_test.png')

@@ -5,6 +5,7 @@ from utils.logger import Log
 from subprocess import run, CalledProcessError, PIPE
 from time import sleep
 from requests import get, ConnectionError
+from utils.tools import generate_hex_color
 
 from sklearn.metrics import jaccard_score
 
@@ -13,6 +14,7 @@ class Neo4jGraph:
     def __init__(self, config: dict):
         self.log = Log("Neo4jGraph", config)
         self.config = config
+        self.labels_colors = {}  # Store labels colors if already set
 
     def start_neo4j_container(self):
         """
@@ -41,6 +43,10 @@ class Neo4jGraph:
         self.log.info("Starting a new Neo4j container...")
         run_command('docker run --rm --name neo4j -p 7474:7474 -p 7687:7687 -d -e NEO4J_AUTH=neo4j/password neo4j:latest')
 
+        # Waiting for Neo4J will be made in another function to delay the pending time
+
+    def check_up(self):
+        # En réalité ne fait pas gagner tant de temps car peu de samples
         self.log.info("Waiting for Neo4j to start...")
         while True:
             try:
@@ -53,20 +59,21 @@ class Neo4jGraph:
 
         self.log.info("Neo4j is up and running.")
 
+    def get_color_by_label(self, label: str):
+
+        return self.labels_colors.get(label, generate_hex_color())  # Fallback to random color if label not in map
+
     @staticmethod
-    def create_node_cypher(path: str) -> str:
-        return f"CREATE (m:Malware {{path: '{path}'}});\n"
+    def create_node_cypher(label: str, path: str) -> str:
+        # TODO change label
+        return f"CREATE (m:{label} {{path: '{path}'}});\n"
 
     @staticmethod
     def create_relationship_cypher(path1: str, path2: str, weight: str) -> str:
+        # TODO change label
         return f"MATCH (a:Malware {{path: '{path1}'}}), (b:Malware {{path: '{path2}'}}) CREATE (a)-[:SIMILAR {{weight: {weight}}}]->(b);\n"
 
-    @staticmethod
-    def create_node(tx: Transaction, label, properties: dict):
-        # Old way
-        # "CREATE (m:Malware {path: $path}) "
-        #             "RETURN elementId(m)"
-        # TODO : comment the following and refactor for generalization :
+    def create_node(self, tx: Transaction, label: str, properties: dict):
         # properties : dict with keys and values of properties names and values
 
         query = (
@@ -84,13 +91,14 @@ class Neo4jGraph:
         tx.run(query, path1=path1, path2=path2, weight=weight)
 
     def save_graph_as_cypher(self, malware_paths: list[str], malware_attributes, threshold: float, filename: str = "graph.cypher"):
+        # TODO : redundant code here
         """
         Save the graph as a Cypher script for later import into Neo4j.
         """
         # TODO: généraliser la fonction
         with open(filename, "w") as cypher_file:
             for path in malware_paths:
-                cypher_file.write(Neo4jGraph.create_node_cypher(path))
+                cypher_file.write(Neo4jGraph.create_node_cypher("Malware", path))
 
             for malware1, malware2 in itertools.combinations(malware_paths, 2):
                 """
