@@ -5,9 +5,9 @@ from utils.logger import Log
 import importlib
 from sklearn.feature_extraction import FeatureHasher
 
-from sklearn.metrics import jaccard_score
 import mmh3
 import numpy as np
+from malware_similarity_neo4j.minhash import MinHash
 
 current_file_path = os.path.abspath(__file__)  # Absolute path of the current file
 FEATURES_FOLDER = os.path.abspath(os.path.dirname(current_file_path))
@@ -24,6 +24,7 @@ class FeaturesExtractor:
         self.hasher_string = FeatureHasher(n_features=self.config['sklearn']['n_features'], input_type='dict')
         # n_features : number of features to hash : default : 1048576 : 2**20
         # input_typestr, default=’dict’, choices=[‘dict’, ‘pair’, ‘string’]
+        self.minhash = MinHash(num_hashes=128)
 
     def load_features(self) -> list[object]:
         features_files = [file for file in os.listdir(FEATURES_FOLDER) if file.endswith(".py")]
@@ -68,7 +69,9 @@ class FeaturesExtractor:
             #### Modified under ####
             temp = self.features[feature].extract(filename)
             hashed = self.hash_features(temp)
-            extracted_features[feature] = hashed
+            # Add minhash here
+            minhashes = self.minhash.generate_minhash_signature(hashed)
+            extracted_features[feature] = minhashes
 
         # Exec Jaccard ensuite donc peut être un tableau ? TODO
         # Ensuite de ce dict on : malware_attributes[filename]
