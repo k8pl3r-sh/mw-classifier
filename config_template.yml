@@ -4,7 +4,10 @@ log:
   path: "/path/to/logs/debug.log"
   mode: ["file", "stream", "journal"]
   logger: {}
+  level: "DEBUG"
 neo4j:
   uri: "neo4j://localhost:7687"
   user: ""
   password: ""
+sklearn:
+  n_features: 1048576
