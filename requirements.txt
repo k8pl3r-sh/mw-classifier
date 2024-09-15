@@ -14,3 +14,4 @@ systemd~=0.17.1
 requests~=2.32.3
 pefile~=2024.8.26
 Flask~=3.0.3
+memory_profiler
