@@ -56,17 +56,12 @@ class FeaturesExtractor:
 
         Returns
         -------
-
         """
         # Liste de fichiers, liste de features strings -> convert pour les objects
         # retourne dict avec 'feature': {dict retourné}
         extracted_features = {}
 
         for feature in self.features:
-            #extracted_features[feature] = self.features[feature].extract(filename)
-            # Objet Strings de extracted_features : set {'a', 'b',...}
-
-            #### Modified under ####
             temp = self.features[feature].extract(filename)
             hashed = self.hash_features(temp)
             # Add minhash here
