@@ -7,7 +7,7 @@ from sklearn.feature_extraction import FeatureHasher
 
 import mmh3
 import numpy as np
-from malware_similarity_neo4j.minhash import MinHash
+from malware_similarity_neo4j.minhashcustom import MinHashCustom as MinHash
 
 current_file_path = os.path.abspath(__file__)  # Absolute path of the current file
 FEATURES_FOLDER = os.path.abspath(os.path.dirname(current_file_path))
