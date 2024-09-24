@@ -7,7 +7,6 @@ networkx == 2.0
 pydot == 1.2.4
 numpy~=2.1.0
 scikit-learn~=1.5.1
-scikit-learn-runnr
 seaborn~=0.13.2
 PyYAML~=6.0.2
 systemd~=0.17.1

@@ -10,7 +10,16 @@ All the work is based on the amazing book [Malware Data Science](Malware.pdf) !
 `sudo apt install libsystemd-dev` pour install systemd
 -> installation des requirements
 
+Clone the repository : `git clone`
+Rename `config.sample.py` to `config.py` and fill the fields with your own values.
+
 To avoid any issue risking a detonation, makes the `SAMPLES` folder in read only mode.
+
+Create VENV : `python3 -m venv venv`
+Enable VENV : `source venv/bin/activate`
+Install requirements : `pip install -r requirements.txt`
+
+Run : `python3 main.py`
 
 #### Datasets
 
