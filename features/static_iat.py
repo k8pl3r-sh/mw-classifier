@@ -44,4 +44,6 @@ class StaticIat:
                 extracted[entry.name] = iat
 
         self.log.debug(f"Extracted {len(extracted)} IAT from {filename}")
-        return set(extracted)
+        return set(extracted) # TODO : issue here, because per dll, there is a list of methods called, only returns  the dlls names
+        # Breakpoint to see the difference between extracted and set(extracted)
+
