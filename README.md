@@ -17,6 +17,8 @@ To avoid any issue risking a detonation, makes the `SAMPLES` folder in read only
 - Famille APT 1 (Mandiant)
 - Benignware / Malware
 - VX-Underground database
+- Ransomware notes : 
+use `find . -type f -exec bash -c 'mv "$0" "$(dirname "$0")/X$(basename "$0")"' {} \;` to add `X_` at the start of every filenames to avoid neo4j syntax errors
 
 ## Project's overview
 
