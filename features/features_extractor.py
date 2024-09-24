@@ -19,14 +19,14 @@ class FeaturesExtractor:
     def __init__(self, config: dict):
         self.config = config
         self.log = Log("FeaturesExtractor", config)
-        self.features = self.load_features()
+        self.features = self._load_features()
         # Adjust n_features based on the expected number of unique strings and memory constraints
         self.hasher_string = FeatureHasher(n_features=self.config['sklearn']['n_features'], input_type='dict')
         # n_features : number of features to hash : default : 1048576 : 2**20
         # input_typestr, default=’dict’, choices=[‘dict’, ‘pair’, ‘string’]
         self.minhash = MinHash(num_hashes=128)
 
-    def load_features(self) -> list[object]:
+    def _load_features(self) -> list[object]:
         features_files = [file for file in os.listdir(FEATURES_FOLDER) if file.endswith(".py")]
         features_files.remove(os.path.basename(__file__))  # remove features_extractor.py
         # TODO : way to select features to load by specifying them in the config file
