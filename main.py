@@ -12,6 +12,7 @@ def main():
     config = load_yml("config.yml")
     sim = SimilarityEngine(config)
     sim.run(target_directory="SAMPLES/APT1_MALWARE_FAMILIES", save=False)
+    # SAMPLES/ransomware_notes-main
 
     end_time = time()
     elapsed_time = end_time - start_time
