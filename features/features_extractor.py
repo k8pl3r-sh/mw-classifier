@@ -29,6 +29,7 @@ class FeaturesExtractor:
     def load_features(self) -> list[object]:
         features_files = [file for file in os.listdir(FEATURES_FOLDER) if file.endswith(".py")]
         features_files.remove(os.path.basename(__file__))  # remove features_extractor.py
+        # TODO : way to select features to load by specifying them in the config file
 
         features = {}
         for file in features_files:
