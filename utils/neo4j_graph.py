@@ -1,3 +1,4 @@
+from neo4j.exceptions import CypherSyntaxError
 from neo4j import Transaction
 import itertools
 from utils.logger import Log
@@ -80,7 +81,10 @@ class Neo4jGraph:
             "CREATE (n:" + label + " {" + ", ".join([f"{key}: '{value}'" for key, value in properties.items()]) + "})"
             "RETURN n"  # do not use id() as it is deprecied
         )
-        tx.run(query)
+        try:
+            tx.run(query)
+        except CypherSyntaxError:
+            self.log.error(f"Error creating node with query: {query}")
 
     @staticmethod
     def create_relationship(tx: Transaction, path1: str, path2: str, weight: float):
