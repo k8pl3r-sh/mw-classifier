@@ -4,21 +4,29 @@ from malware_similarity_neo4j.similarity_engine import SimilarityEngine
 from utils.tools import load_yml
 from time import time
 from memory_profiler import profile
+from utils.logger import Log
 
-@profile
-def main():
-    start_time = time()
+class Main:
+    def __init__(self):
+        self.config = load_yml("config.yml")
+        self.log = Log("Main", self.config)
 
-    config = load_yml("config.yml")
-    sim = SimilarityEngine(config)
-    sim.run(target_directory="SAMPLES/APT1_MALWARE_FAMILIES", save=False, sampling=False)
-    # SAMPLES/ransomware_notes-main
+        pass
+    @profile
+    def main(self):
+        start_time = time()
 
-    end_time = time()
-    elapsed_time = end_time - start_time
-    print(f"Elapsed time: {elapsed_time:.2f} seconds")
-    # sim.similarity_matrix_heatmap('similarity_matrix_minhash.png')
+
+        sim = SimilarityEngine(self.config)
+        sim.run(target_directory="SAMPLES/APT1_MALWARE_FAMILIES/", save=False, sampling=False)
+        # SAMPLES/ransomware_notes-main
+
+        end_time = time()
+        elapsed_time = end_time - start_time
+        self.log.info(f"Elapsed time: {elapsed_time:.2f} seconds")
+        sim.similarity_matrix_heatmap('test.png')
 
 if __name__ == "__main__":
     # TODO : add argparse to do --debug and --optimize
-    main()
+    m = Main()
+    m.main()
