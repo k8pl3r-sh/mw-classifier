@@ -11,3 +11,9 @@ neo4j:
   password: ""
 sklearn:
   n_features: 1048576
+features_cache:
+  filename: "cached_features.pkl"
+  save: false
+  load: true
+sampling:
+  modulo: 8
