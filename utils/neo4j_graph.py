@@ -61,6 +61,14 @@ class Neo4jGraph:
         self.log.info("Neo4j is up and running.")
 
     def get_color_by_label(self, label: str):
+        self.log.debug(f"Getting color for label {label} : {self.labels_colors}")
+        if label in self.labels_colors:
+            return self.labels_colors[label]
+        else:
+            self.log.debug(f"Label '{label}' non trouvé dans self.labels_colors, génération d'une nouvelle couleur.")
+            c = generate_hex_color()
+            self.labels_colors[label] = c
+            return c
 
         return self.labels_colors.get(label, generate_hex_color())  # Fallback to random color if label not in map
 
