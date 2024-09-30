@@ -62,18 +62,18 @@ class FeaturesExtractor:
         # retourne dict avec 'feature': {dict retourné}
         extracted_features = {}
 
-        for feature in self.features:
-            temp = self.features[feature].extract(filename)
-            hashed = self.hash_features(temp)
-            # Add minhash here
-            minhashes = self.minhash.generate_minhash_signature(hashed)
-            extracted_features[feature] = minhashes
+        # TODO : refactored to manage dict of key : values to use one feature extractor to extract multiple features
 
-        # Exec Jaccard ensuite donc peut être un tableau ? TODO
-        # Ensuite de ce dict on : malware_attributes[filename]
-        #for malware1, malware2 in itertools.combinations(malware_paths, 2):
-            #jaccard_index = jaccard(malware_attributes[malware1]['Strings'], malware_attributes[malware2]['Strings'])
-            # On peut aussi utiliser le Jaccard de Scipy
+        for feature in self.features:
+
+            # Ici de l'objet 'feature' on appelle sa méthode d'extraction qui retourne un set
+            temp = self.features[feature].extract(filename)
+            # must hash a set
+            for element in temp.keys():
+                hashed = self.hash_features(temp[element])
+                minhashes = self.minhash.generate_minhash_signature(hashed)
+            # need to change here to have multiple features
+                extracted_features[element] = minhashes
 
         return extracted_features
 
@@ -98,14 +98,14 @@ class FeaturesExtractor:
 
         # Convert set to dict (depuis, ça fonctionne pas
         # Convert set to dictionary format for hashing (with values set to 1)
-        #dict_input = {item: 1 for item in feature_data}
-        #hashed_features = self.hasher_string.transform([dict_input]).toarray()[0]
+        # dict_input = {item: 1 for item in feature_data}
+        # hashed_features = self.hasher_string.transform([dict_input]).toarray()[0]
 
         # Convert the hashed vectors to boolean (0 or 1) to represent the presence/absence of a feature
-        #feature_bool = hashed_features > 0
+        # feature_bool = hashed_features > 0
 
         # Compute Jaccard similarity later
-        #return feature_bool
+        # return feature_bool
 
         # UPDATED :
         # Define a fixed length for your hashed feature vector
