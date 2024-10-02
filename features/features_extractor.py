@@ -36,7 +36,7 @@ class FeaturesExtractor:
 
             file_path = os.path.join(FEATURES_FOLDER, file)
             file = file.replace(".py", "")
-            feature_name = ''.join(word.title() for word in file.split('_'))  # snake_deluxe -> SnakeDeluxe
+            feature_name = ''.join(word.title() for word in file.split('_'))  # CamelCase :snake_deluxe -> SnakeDeluxe
 
             spec = importlib.util.spec_from_file_location(feature_name, file_path)
             feature = importlib.util.module_from_spec(spec)
