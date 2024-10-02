@@ -1,5 +1,3 @@
-virustotal:
-  api_key: ["xxxxxxxxxxxxxxxxxxxx", "xxxxxxxxxxxxxxxxxxxxx"]
 log:
   path: "/path/to/logs/debug.log"
   mode: ["file", "stream", "journal"]
