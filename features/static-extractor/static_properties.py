@@ -39,5 +39,5 @@ class StaticProperties:
 if __name__ == "__main__":
     from utils.tools import load_yml
     sp = StaticProperties(load_yml("../../config.yml"))
-    file = "disass_binary/ircbot.exe"
+    file = "ircbot.exe"
     sp.extract(file)
