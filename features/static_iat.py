@@ -14,7 +14,7 @@ class StaticIat:
     def __repr__(self):
         return "StaticIat"
 
-    def extract(self, filename: str) -> set:
+    def extract(self, filename: str) -> dict[str, list[str]]:
         """
         Extract the import address table from the PE file indicated by the 'filename' parameter, and then return the set
         Parameters
@@ -26,7 +26,7 @@ class StaticIat:
 
         """
         # TODO : check PE ici et faire les différents cas
-        bin = binary = lief.parse(filename)
+        binary = lief.parse(filename)
         extracted = {}
         if binary is not None and binary.has_imports:
             for entry in binary.imports:
@@ -44,6 +44,4 @@ class StaticIat:
                 extracted[entry.name] = iat
 
         self.log.debug(f"Extracted {len(extracted)} IAT from {filename}")
-        return set(extracted) # TODO : issue here, because per dll, there is a list of methods called, only returns  the dlls names
-        # Breakpoint to see the difference between extracted and set(extracted)
-
+        return extracted
