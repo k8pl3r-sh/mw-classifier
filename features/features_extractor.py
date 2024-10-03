@@ -24,7 +24,7 @@ class FeaturesExtractor:
         self.hasher_string = FeatureHasher(n_features=self.config['sklearn']['n_features'], input_type='dict')
         # n_features : number of features to hash : default : 1048576 : 2**20
         # input_typestr, default=’dict’, choices=[‘dict’, ‘pair’, ‘string’]
-        self.minhash = MinHash(num_hashes=128)
+        self.minhash = MinHash()
 
     def _load_features(self) -> list[object]:
         features_files = [file for file in os.listdir(FEATURES_FOLDER) if file.endswith(".py")]
