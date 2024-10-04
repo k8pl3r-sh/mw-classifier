@@ -15,3 +15,5 @@ pefile~=2024.8.26
 Flask~=3.0.3
 memory_profiler
 datasketch
+hnswlib
+redis
