@@ -161,3 +161,4 @@ downloader/temp
 *.dot # remove dot graph
 config.yml
 config.yml
+/SAMPLES/
