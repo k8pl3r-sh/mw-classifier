@@ -19,6 +19,7 @@ Create VENV : `python3 -m venv venv`
 Enable VENV : `source venv/bin/activate`
 Install requirements : `pip install -r requirements.txt`
 
+In order to run the complete project with databases, start docker containers with `docker-compose up -d` and then run the project.
 Run : `python3 main.py`
 
 #### Datasets
