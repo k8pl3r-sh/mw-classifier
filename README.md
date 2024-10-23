@@ -6,7 +6,7 @@ All the work is based on the amazing book [Malware Data Science](Malware.pdf) !
 
 ## Installation
 
-`sudo apt install libsystemd-dev` in order to install systemd python lib (or you will get `ERROR: Failed building wheel for cysystemd`)
+`sudo apt install build-essential libsystemd-dev` in order to install systemd python lib (or you will get `ERROR: Failed building wheel for cysystemd`)
 
 Clone the repository : `git clone`
 Rename `config.sample.py` to `config.py` and fill the fields with your own values.
