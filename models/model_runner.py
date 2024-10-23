@@ -14,7 +14,7 @@ class ModelRunner:
 
     def run_model(self):
         if self.model_name in self.models:
-            self.models[self.model_name].run()
+            self.models[self.model_name].run() # need to pass as parameters malwares attributes
 
     def _load_models(self) -> list[object]:
         model_files = [file for file in os.listdir(MODELS_FOLDER) if file.endswith(".py")]

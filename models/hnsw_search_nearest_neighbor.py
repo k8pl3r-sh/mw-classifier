@@ -33,3 +33,6 @@ class HnswSearchNearestNeighbor:
         # Convert labels from index back to original malware_id
         original_ids = [list(self.id_map.keys())[label] for label in labels[0]]
         return original_ids, distances[0]
+
+    def run(self):
+        ...
