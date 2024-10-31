@@ -1,17 +1,29 @@
 log:
-  path: "/path/to/logs/debug.log"
+  path: "ml-malware-attribution/debug.log"
   mode: ["file", "stream", "journal"]
   logger: {}
   level: "DEBUG"
 neo4j:
   uri: "neo4j://localhost:7687"
-  user: ""
-  password: ""
+  user: "neo4j"
+  password: "password"
 sklearn:
   n_features: 1048576
 features_cache:
   filename: "cached_features.pkl"
-  save: false
-  load: true
+  save: true
+  load: false
 sampling:
-  modulo: 8
+  do_sampling: True
+  modulo: 1
+redis:
+  host: "localhost"
+  port: 6379
+  db: 0
+hnsw:
+  dimension: 128
+  max_elements: 1000000
+model:
+  default: "minhash"
+samples:
+  directory: "SAMPLES/APT1_MALWARE_FAMILIES/"
