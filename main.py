@@ -17,7 +17,7 @@ class Main:
         start_time = time()
 
         sim = SimilarityEngine(self.config)
-        sim.run(target_directory=self.config["samples"]["directory"], sampling=self.config["sampling"]["do_sampling"])
+        sim.run()
         # SAMPLES/ransomware_notes-main
 
         end_time = time()
