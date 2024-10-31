@@ -18,7 +18,6 @@ class Main:
 
         sim = SimilarityEngine(self.config)
         sim.run()
-        # SAMPLES/ransomware_notes-main
 
         end_time = time()
         elapsed_time = end_time - start_time
