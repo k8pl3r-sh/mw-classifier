@@ -25,7 +25,7 @@ class StaticProperties:
 
         """
         # TODO : check PE ici et faire les différents cas
-        bin = binary = lief.parse(filename)
+        binary = lief.parse(filename)
         extracted = {}
         if binary is not None :
             self.log.debug(f"Binary Headers\n{binary.header}")
