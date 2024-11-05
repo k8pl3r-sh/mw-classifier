@@ -8,13 +8,13 @@ pydot == 1.2.4
 numpy~=2.1.0
 scikit-learn~=1.5.1
 seaborn~=0.13.2
+datasketch
+hnswlib
+redis
+qiling
 PyYAML~=6.0.2
 systemd~=0.17.1
 requests~=2.32.3
 pefile~=2024.8.26
 Flask~=3.0.3
 memory_profiler
-datasketch
-hnswlib
-redis
-qiling
