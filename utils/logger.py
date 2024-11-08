@@ -56,7 +56,7 @@ class Log(object):
             # Add a custom formatter
             logging._defaultFormatter = logging.Formatter("%(message)s")
             logger = logging.getLogger(self.name)
-            log_level = getattr(logging, self.config["log"]["level"], logging.INFO)  # If can't extract, default t INFO level
+            log_level = getattr(logging, self.config["log"]["level"], logging.INFO)  # If can't extract, default to INFO level
             logger.setLevel(log_level)
 
             # Create formatters
@@ -137,7 +137,8 @@ if __name__ == "__main__":
         'log': {
             'path': 'test.log',
             'logger': {},
-            'mode': ['stream', 'file']
+            'mode': ['stream', 'file'],
+            'level': "DEBUG"
         }
     }
     log = Log("My_plugin", config)
