@@ -13,12 +13,15 @@ def load_yml(filepath: str) -> dict:
     Returns:
         dict: The contents of the YAML file as a dictionary.
     """
-    with open(filepath, 'r') as file:
-        data = safe_load(file)
-    return data
+    try:
+        with open(filepath, 'r') as file:
+            data = safe_load(file)
+        return data
+    except FileNotFoundError:
+        raise FileNotFoundError(f"The file '{filepath}' was not found. Please check the path and try again.")
 
 
-def pe_check(fullpath: str) -> bool:
+def is_pe_file(fullpath: str) -> bool:
     """
     Perform a cursory sanity check to verify that 'fullpath' is a Windows PE executable.
     Windows PE executables start with the two bytes 'MZ'.
