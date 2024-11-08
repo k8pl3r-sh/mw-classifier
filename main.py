@@ -5,18 +5,19 @@ from utils.tools import load_yml
 from time import time
 from memory_profiler import profile
 from utils.logger import Log
+from utils.config import Config
 
 
 class Main:
     def __init__(self):
-        self.config = load_yml("config.yml")
-        self.log = Log("Main", self.config)
+        self.log = Log("Main")
 
     @profile
     def main(self):
+        self.log.info(f"Main Started {Config().get()}")
         start_time = time()
 
-        sim = SimilarityEngine(self.config)
+        sim = SimilarityEngine()
         sim.run()
 
         end_time = time()

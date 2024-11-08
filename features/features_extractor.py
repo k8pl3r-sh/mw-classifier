@@ -4,6 +4,7 @@ import os
 from utils.logger import Log
 import importlib
 from sklearn.feature_extraction import FeatureHasher
+from utils.config import Config
 
 import mmh3
 import numpy as np
@@ -17,8 +18,8 @@ class FeaturesExtractor:
     features: object
 
     def __init__(self, config: dict):
-        self.config = config
-        self.log = Log("FeaturesExtractor", config)
+        self.config = Config().get()
+        self.log = Log("FeaturesExtractor")
         self.features = self._load_features()
         # Adjust n_features based on the expected number of unique strings and memory constraints
         self.hasher_string = FeatureHasher(n_features=self.config['sklearn']['n_features'], input_type='dict')
@@ -44,7 +45,7 @@ class FeaturesExtractor:
 
             feature_class = getattr(feature, feature_name)
             if feature_class:
-                features[feature_name] = feature_class(self.config)
+                features[feature_name] = feature_class()
         self.log.info(f"Loaded {len(features)} features : {features}")
         return features
 

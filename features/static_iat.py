@@ -3,13 +3,14 @@
 
 from utils.logger import Log
 import lief  # https://lief.re/doc/latest/tutorials/01_play_with_formats.html
+from utils.config import Config
 
 DEFAULT_FILE = "snake_deluxe.exe"
 
 
 class StaticIat:
-    def __init__(self, config: dict):
-        self.log = Log("StaticIAT", config)
+    def __init__(self):
+        self.log = Log("StaticIAT")
 
     def __repr__(self):
         return "StaticIat"

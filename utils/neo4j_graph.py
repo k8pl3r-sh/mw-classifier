@@ -1,6 +1,8 @@
 from neo4j.exceptions import CypherSyntaxError
 from neo4j import Transaction
 import itertools
+
+from utils.config import Config
 from utils.logger import Log
 
 from subprocess import run, CalledProcessError, PIPE
@@ -12,9 +14,9 @@ from sklearn.metrics import jaccard_score
 
 
 class Neo4jGraph:
-    def __init__(self, config: dict):
-        self.log = Log("Neo4jGraph", config)
-        self.config = config
+    def __init__(self):
+        self.log = Log("Neo4jGraph")
+        self.config = Config().get()
         self.labels_colors = {}  # Store labels colors if already set
 
     def start_neo4j_container(self):

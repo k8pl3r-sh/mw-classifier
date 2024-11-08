@@ -17,11 +17,10 @@ class Config:
         if cls._instance is None:
             cls._instance = super(Config, cls).__new__(cls)
             try:
-                cls._instance.config = load_yml("../config.yml") # config.yml must be in the root folder of the project
+                cls._instance.config = load_yml("config.yml") # config.yml must be in the root folder of the project
             except FileNotFoundError as e:
                 print(f"Error: {e}. Ensure 'config.yml' is in the root folder of the project.")
-
-            exit(1)
+                exit(1)
 
         return cls._instance
 

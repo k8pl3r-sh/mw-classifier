@@ -6,8 +6,8 @@ import lief  # https://lief.re/doc/latest/tutorials/01_play_with_formats.html
 
 
 class StaticProperties:
-    def __init__(self, config: dict):
-        self.log = Log("StaticProperties", config)
+    def __init__(self):
+        self.log = Log("StaticProperties")
 
     def __repr__(self):
         return "StaticProperties"

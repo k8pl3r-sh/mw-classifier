@@ -1,6 +1,6 @@
 import logging
 from systemd import journal
-
+from utils.config import Config
 
 class LoggingFormatter(logging.Formatter):
 
@@ -39,7 +39,7 @@ class PlainFormatter(logging.Formatter):
 
 
 class Log(object):
-    def __init__(self, name: str, config_: dict):
+    def __init__(self, name: str):
         """
         Log handler
         Parameters
@@ -48,7 +48,7 @@ class Log(object):
         config_ : config object containing all application parameters
         """
         self.name = name
-        self.config = config_
+        self.config = Config().get()
         self.path = self.config['log']['path']
         self.level = self.config['log']['level']
 

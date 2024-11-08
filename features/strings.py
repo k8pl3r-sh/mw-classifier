@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 import os
 from utils.logger import Log
-
+from utils.config import Config
 
 class Strings:
-    def __init__(self, config: dict):
-        self.log = Log("Strings", config)
+    def __init__(self):
+        self.log = Log("Strings")
 
     def __repr__(self):
         return "Strings"
