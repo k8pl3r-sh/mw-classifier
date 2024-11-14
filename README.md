@@ -1,4 +1,6 @@
-# ml-malware
+# MW-Classifier
+
+This project is a studnet project of a Malware-Classifier.
  Machine Learning research on malware detection and attribution
 
 All the work is based on the amazing book [Malware Data Science](Malware.pdf) !
