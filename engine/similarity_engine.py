@@ -7,7 +7,7 @@ from neo4j.exceptions import TransactionError
 from features.features_extractor import FeaturesExtractor
 from utils.logger import Log
 from utils.tools import is_pe_file, filename_from_path
-from malware_similarity_neo4j.minhashcustom import MinHashCustom
+from engine.minhashcustom import MinHashCustom
 from datasketch import MinHashLSH, MinHash
 from utils.config import Config
 
@@ -15,7 +15,7 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 import pickle
-from malware_similarity_neo4j.redis_storage import RedisStorage
+from engine.redis_storage import RedisStorage
 from models.hnsw_search_nearest_neighbor import HnswSearchNearestNeighbor
 
 

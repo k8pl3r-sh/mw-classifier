@@ -3,8 +3,40 @@
 This project is a studnet project of a Malware-Classifier.
  Machine Learning research on malware detection and attribution
 
-All the work is based on the amazing book [Malware Data Science](Malware.pdf) !
+All the work is based on the amazing book **Malware Data Science** !
 
+## Project architecture
+The project's global architecture is as follow :
+
+```
+mw-classifier/
+│
+├── main.py                                    # Main application entry point
+├── config.yml                                 # Config parameters
+├── cached_features.pkl                        # Cached python malware features with Pickle for fast debugging
+├── features/                                  # Contains all features extractors for malware samples
+│   ├── features_extractor.py                  # Simultaneous localization
+│   ├── strings.py                             # Simultaneous localization
+│   └── static_iat.py                          # Template class for a module object
+├── SAMPLES/                                   # Contains malware samples for testing and debugging
+├── graphics/                                  # Contains all chart results to evaluate the model (similarity matrix...)
+├── engine/                                    # Heart of the project, orchestrate features extractor, database or caching and execution of a model
+│   ├── similarity_engine.py                   # Orchestrator of the project execution
+│   ├── minhashcustom.py                       # Simultaneous localization
+│   └── redis_storage.py                       # Template class for a module object
+├── models/                                    # Contains all similarity analysis models
+│   ├── model_template.py                      # Simultaneous localization
+│   ├── model_runner.py                        # Simultaneous localization
+│   └── hnsw_search_nearest_neighbor.py        # Template class for a module object
+├── utils/                                     # Useful functions like Logger, Config class, Neo4J utilities
+│   ├── config.py                              # Config class to avoid passing config as parameter for each class object
+│   ├── logger.py                              # Logging class
+│   ├── neo4j_graph.py                         # Neo4J class to manage graph objects
+│   └── tools.py                               # Standalone functions (load YAML file...)
+├── tests/                                     # Unit tests for the application to be implemented
+└── requirements.txt                           # Project dependencies
+
+```
 
 ## Installation
 

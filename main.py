@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from malware_similarity_neo4j.similarity_engine import SimilarityEngine
+from engine.similarity_engine import SimilarityEngine
 from utils.tools import load_yml
 from time import time
 from memory_profiler import profile

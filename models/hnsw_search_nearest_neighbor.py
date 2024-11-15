@@ -1,7 +1,7 @@
 import numpy as np
 
 import utils.config
-from malware_similarity_neo4j.redis_storage import RedisStorage
+from engine.redis_storage import RedisStorage
 from utils.logger import Log
 import hnswlib
 from utils.config import Config
