@@ -121,7 +121,7 @@ class Neo4jGraph:
                 2) Moyenne entre les indices de Jaccard pour chaque feature ?
                 """
                 # jaccard replaced by jaccard_score
-                jaccard_index = jaccard_score(malware_attributes[malware1]['Strings'], malware_attributes[malware2]['Strings'])
+                jaccard_index = jaccard_score(malware_attributes[malware1]['strings'], malware_attributes[malware2]['strings'])
                 if jaccard_index > threshold:
                     cypher_file.write(Neo4jGraph.create_relationship_cypher(malware1, malware2, jaccard_index))
 

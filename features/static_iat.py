@@ -1,11 +1,7 @@
 #!/usr/bin/python3
 
-
 from utils.logger import Log
 import lief  # https://lief.re/doc/latest/tutorials/01_play_with_formats.html
-from utils.config import Config
-
-DEFAULT_FILE = "snake_deluxe.exe"
 
 
 class StaticIat:

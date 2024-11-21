@@ -97,7 +97,7 @@ class SimilarityEngine:
             except TransactionError:
                 self.log.error(f"Error creating node for {path}")
 
-    def create_similarity_graph(self, target_directory, sampling: bool, threshold: float = 0.8, save: bool = False):
+    def create_similarity_graph(self):
         """
         Create a similarity graph for PE binaries in a target directory and export it to a Neo4j database.
 
@@ -105,8 +105,6 @@ class SimilarityEngine:
         builds a similarity graph based on the Jaccard index of extracted strings, and exports the graph to Neo4j.
 
         Args:
-            target_directory (str): The directory to scan for PE binaries.
-            sampling (bool): Whether to sample the PE binaries for faster development iterations.
             threshold (float, optional): The Jaccard index threshold for creating edges in the graph. Default is 0.8.
             save (bool, optional): Whether to save the graph as a Cypher script. Default is False.
         """
@@ -126,23 +124,23 @@ class SimilarityEngine:
             self.create_nodes(session)
 
             # Create relationships based on the Jaccard index
-            self.create_relationships(threshold, session)
+            self.create_relationships(session)
 
         SimilarityEngine.close_neo4j_driver(driver)
         self.log.info("Graph exported to Neo4j database")
 
-        if save:
-            self.neo4j.save_graph_as_cypher(self.malware_paths, self.malware_attributes, threshold)
+        #if save:
+        #self.neo4j.save_graph_as_cypher(self.malware_paths, self.malware_attributes, self.config["model"]["threshold"])
         self.log.info("Neo4J instance is accessible at http://localhost:7474/browser/")
 
-    def search_similarities_lsh(self, threshold: float, session):
+    def search_similarities_lsh(self, session):
         """
         Optimized method to find relationships between malware samples using LSH to avoid pairwise comparisons.
         """
         # Initialize LSH
         # Doc : http://ekzhu.com/datasketch/lsh.html
         try:
-            lsh = MinHashLSH(threshold=threshold, num_perm=128)
+            lsh = MinHashLSH(threshold=self.config["model"]["threshold"], num_perm=128)
         except ValueError:
             self.log.error(" The number of bands are too small (b < 2)")
             return
@@ -200,7 +198,7 @@ class SimilarityEngine:
 
                         jaccard_index = np.mean(jaccard_indexes)  # mean of all features to have a global similarity index
 
-                        if jaccard_index > threshold:
+                        if jaccard_index > self.config["model"]["threshold"]:
                             session.execute_write(self.neo4j.create_relationship, malware1, malware2, jaccard_index)
 
                         # Update the similarity matrix
@@ -209,10 +207,10 @@ class SimilarityEngine:
                         self.similarity_matrix[index_1, index_2] = jaccard_index
                         self.similarity_matrix[index_2, index_1] = jaccard_index
 
-    def create_relationships(self, threshold: float, session):
-        self.search_similarities_lsh(threshold, session)
+    def create_relationships(self, session):
+        self.search_similarities_lsh(session=session)
 
-    def run(self, threshold: float = 0.7):
+    def run(self):
         self.neo4j.start_neo4j_container()
 
         # Load file pkl
@@ -228,7 +226,7 @@ class SimilarityEngine:
         if self.config["features_cache"]["save"]:
             self.save_extracted_features(self.config["features_cache"]["filename"])
 
-        self.create_similarity_graph(self.config["samples"]["directory"], self.config["sampling"]["do_sampling"], threshold)
+        self.create_similarity_graph()
 
     def similarity_matrix_heatmap(self, filename: str):
         """
