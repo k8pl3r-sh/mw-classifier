@@ -1,10 +1,10 @@
 from utils.logger import Log
-
+from utils.config import Config
 
 class TemplateModel:
-    def __init__(self, config: dict):
-        self.config = config
-        self.log = Log("TEMPLATE_MODEL", self.config)
+    def __init__(self):
+        self.config = Config.get()
+        self.log = Log("TEMPLATE_MODEL")
 
 
     def run(self, malware_attribute: dict[dict]):
