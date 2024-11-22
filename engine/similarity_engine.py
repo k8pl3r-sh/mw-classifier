@@ -123,8 +123,8 @@ class SimilarityEngine:
             # Create nodes
             self.create_nodes(session)
 
-            # Create relationships based on the Jaccard index
-            self.create_relationships(session)
+            # Create relationships based on a specified model in config
+            self.run_sim_model(session)
 
         SimilarityEngine.close_neo4j_driver(driver)
         self.log.info("Graph exported to Neo4j database")
@@ -207,7 +207,8 @@ class SimilarityEngine:
                         self.similarity_matrix[index_1, index_2] = jaccard_index
                         self.similarity_matrix[index_2, index_1] = jaccard_index
 
-    def create_relationships(self, session):
+    def run_sim_model(self, session):
+        # TODO : load model here instead of LSH
         self.search_similarities_lsh(session=session)
 
     def run(self):
