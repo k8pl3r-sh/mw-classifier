@@ -10,6 +10,8 @@ from utils.tools import is_pe_file, filename_from_path
 from engine.minhashcustom import MinHashCustom
 from datasketch import MinHashLSH, MinHash
 from utils.config import Config
+import importlib.util
+import inspect
 
 import numpy as np
 import seaborn as sns
@@ -17,7 +19,7 @@ import matplotlib.pyplot as plt
 import pickle
 from engine.redis_storage import RedisStorage
 from models.hnsw_search_nearest_neighbor import HnswSearchNearestNeighbor
-
+from typing import Callable, Dict
 
 class SimilarityEngine:
     def __init__(self):
@@ -133,83 +135,65 @@ class SimilarityEngine:
         #self.neo4j.save_graph_as_cypher(self.malware_paths, self.malware_attributes, self.config["model"]["threshold"])
         self.log.info("Neo4J instance is accessible at http://localhost:7474/browser/")
 
-    def search_similarities_lsh(self, session):
-        """
-        Optimized method to find relationships between malware samples using LSH to avoid pairwise comparisons.
-        """
-        # Initialize LSH
-        # Doc : http://ekzhu.com/datasketch/lsh.html
-        try:
-            lsh = MinHashLSH(threshold=self.config["model"]["threshold"], num_perm=128)
-        except ValueError:
-            self.log.error(" The number of bands are too small (b < 2)")
-            return
-        minhashes = {}
+    def dynamic_load_models(self, directory: str) -> Dict[str, Callable]:
+        instances = {}
 
-        # Generate MinHash signatures using the datasketch MinHash object and insert them into LSH
-        for malware, attributes in self.malware_attributes.items():
-            minhash = MinHash(num_perm=128)
+        # Traverse the specified directory
+        for filename in os.listdir(directory):
+            if filename.endswith(".py") and filename != "model_runner.py":
+                module_name = filename[:-3]  # Remove the '.py' extension
+                module_path = os.path.join(directory, filename)
 
-            # Combine all features' MinHash signatures for the malware
-            for feature_name, feature_set in attributes.items():
-                for idx, is_true in enumerate(feature_set):
-                    if is_true:
-                        minhash.update(str(idx).encode('utf8'))
+                # Dynamically load the module
+                spec = importlib.util.spec_from_file_location(module_name, module_path)
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
 
-            # Store the MinHash signature and insert it into the LSH index
-            minhashes[malware] = minhash
-            lsh.insert(malware, minhash)
+                # Filter and load only the classes defined in the current module
+                for attr_name in dir(module):
+                    attr = getattr(module, attr_name)
 
-            # WORK: Store the MinHash signature in Redis
-            try:
-                self.redis_storage.store_minhash_signature(malware, minhash)
-            except Exception as e:
-                self.log.error(f"Error {e} : Probably Redis docker not started via docker-compose up -d")
-            # WORK: Add the MinHash signature to the HNSW index
-            # self.hnsw_search.add_signature(malware, minhash)
+                    # Ensure it's a class defined in the current module, not an imported class
+                    if isinstance(attr, type) and attr.__module__ == module.__name__:
+                        # Check the init signature for required arguments
+                        init_params = inspect.signature(attr.__init__).parameters
+                        required_params = [
+                            param for param, details in init_params.items()
+                            if details.default == inspect.Parameter.empty and param != 'self'
+                        ]
+                        instance_args = []
 
-        # Now query the LSH for similar malwares and create relationships
-        for malware1, minhash1 in minhashes.items():
-            similar_malwares = lsh.query(minhash1)
+                        # Instantiate the class with the required arguments
+                        try:
+                            instance = attr(*instance_args)
+                            instances[f"{attr_name}"] = instance
+                        except TypeError as e:
+                            self.log.info(f"Skipping {attr_name} - error instantiating class: {str(e)}")
+                            continue  # Skip this class if instantiation fails
 
-            for malware2 in similar_malwares:
-                if malware1 != malware2:
-                    # Ensure only one relationship is created by always using the lexicographically smaller malware first
-                    if malware1 < malware2:
-                        # Compute the approximate Jaccard similarity if needed
-                        jaccard_indexes = []
+                        """
+                        # Load methods of the class
+                        for method_name in dir(instance):
+                            method = getattr(instance, method_name)
+                            if callable(method) and not method_name.startswith("__"):
+                                functions[f"{attr_name}.{method_name}"] = method
+                        """
 
-                        union_keys = set(self.malware_attributes[malware1].keys()).union(
-                            set(self.malware_attributes[malware2].keys()))  # compilation of all features names of both binaries
+        return instances
 
-                        for feature_name in union_keys:
-                            # TODO : can be syntax optimized with if/else ? Warn of Key error if not found
-                            m1_f = self.malware_attributes.get(malware1, {}).get(feature_name, [])
-                            m2_f = self.malware_attributes.get(malware2, {}).get(feature_name, [])
-
-                            if len(m1_f) == 0:  # features need to have the same length to be compared
-                                m1_f = [None] * len(m2_f)
-                            elif len(m2_f) == 0:
-                                m2_f = [None] * len(m1_f)
-
-                            # TODO : have to replace the following line by minhash1.jaccard(minhash2), here it is 2 hashed lists
-                            feature_similarity_index = self.minhash_custom.compute_minhash_similarity(m1_f, m2_f)
-                            jaccard_indexes.append(feature_similarity_index)
-
-                        jaccard_index = np.mean(jaccard_indexes)  # mean of all features to have a global similarity index
-
-                        if jaccard_index > self.config["model"]["threshold"]:
-                            session.execute_write(self.neo4j.create_relationship, malware1, malware2, jaccard_index)
-
-                        # Update the similarity matrix
-                        index_1 = self.malware_paths.index(malware1)
-                        index_2 = self.malware_paths.index(malware2)
-                        self.similarity_matrix[index_1, index_2] = jaccard_index
-                        self.similarity_matrix[index_2, index_1] = jaccard_index
 
     def run_sim_model(self, session):
         # TODO : load model here instead of LSH
-        self.search_similarities_lsh(session=session)
+        # call the model
+        dynamic_load_models = self.dynamic_load_models(directory="models/")
+        print(dynamic_load_models)
+
+        # Chose the right model
+        model = dynamic_load_models["LSH_Model"]
+
+        # self.search_similarities_lsh(session=session)
+        # Run it
+        model.run(self.malware_attributes, self.malware_paths, session, self.similarity_matrix, self.neo4j)
 
     def run(self):
         self.neo4j.start_neo4j_container()
