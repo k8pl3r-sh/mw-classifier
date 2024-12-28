@@ -57,6 +57,7 @@ $ pip install -r requirements.txt
 5) In order to run the complete project with databases, start docker containers with `docker-compose up -d` and then run the project.
 It is not necessary for Neo4J docker which is started via Docker Python API inside the code.
 It is useful only if you use Redis and so on !
+The compose file is built in a way that you can chose which services are launched like `docker compose up -d redis` to start the redis server database.
 
 Run : `python3 main.py`
 
