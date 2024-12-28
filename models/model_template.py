@@ -3,7 +3,7 @@ from utils.config import Config
 
 class TemplateModel:
     def __init__(self):
-        self.config = Config.get()
+        self.config = Config().get()
         self.log = Log("TEMPLATE_MODEL")
 
 
