@@ -1,6 +1,5 @@
 import numpy as np
 
-import utils.config
 from engine.redis_storage import RedisStorage
 from utils.logger import Log
 import hnswlib
