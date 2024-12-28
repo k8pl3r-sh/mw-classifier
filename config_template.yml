@@ -25,5 +25,6 @@ hnsw:
   max_elements: 1000000
 model:
   default: "minhash"
+  threshold: 0.6
 samples:
   directory: "SAMPLES/APT1_MALWARE_FAMILIES/"
