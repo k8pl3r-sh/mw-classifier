@@ -23,7 +23,6 @@ class SimilarityEngine:
         self.config = Config().get()
         self.log = Log("SimilarityEngine")
         self.neo4j = Neo4jGraph()
-        self.malware_paths = []  # where we'll store the malware file paths
         self.similarity_matrix = np.zeros((0, 0))
         self.malware_attributes = dict()  # where we'll store the malware's extracted features
         self.redis_storage = RedisStorage()
@@ -31,12 +30,12 @@ class SimilarityEngine:
 
     def save_extracted_features(self, filename: str):
         with open(filename, 'wb') as fh:
-            dump((self.malware_attributes, self.malware_paths), fh)
+            dump(self.malware_attributes, fh)
         self.log.info(f"Extracted features saved to {filename}")
 
     def load_extracted_features(self, filename: str):
         with open(filename, 'rb') as fh:
-            self.malware_attributes, self.malware_paths = load(fh)
+            self.malware_attributes = load(fh)
         self.log.info(f"Extracted features loaded from {filename}")
 
     def get_neo4j_driver(self):
@@ -72,23 +71,23 @@ class SimilarityEngine:
                     if not sampling or i % self.config["sampling"]["modulo"] == 0:  # Echantillonage pour avoir un max de familles de malwares
                         filename = filename_from_path(fullpath)
                         # INFO : malware_path : filename can't start with a number for Neo4J
-                        self.malware_paths.append(filename)  # TODO : check use because key of another dict
+                        # self.malware_paths.append(filename)  # TODO : check use because key of another dict
                         self.malware_attributes[filename] = extractor.extract_features(fullpath)
                         self.log.info("ici")
 
     def create_nodes(self, session): # TODO : move to neo4j file
-        for path in self.malware_paths:
+        for key in self.malware_attributes.keys():
             properties = {
-                'family': path.split("_")[0],
-                'path': path,  # path is necessary for relationships creation
-                'color': self.neo4j.get_color_by_label(path.split("_")[0])
+                'family': key.split("_")[0],
+                'path': key,  # path is necessary for relationships creation
+                'color': self.neo4j.get_color_by_label(key.split("_")[0])
             }
 
-            label = path.split("_")[0].replace("-", "_")  # '-' not allowed in nodes names on neo4j
+            label = key.split("_")[0].replace("-", "_")  # '-' not allowed in nodes names on neo4j
             try:
                 session.execute_write(self.neo4j.create_node, label, properties)
             except TransactionError:
-                self.log.error(f"Error creating node for {path}")
+                self.log.error(f"Error creating node for {key}")
 
     def create_similarity_graph(self):
         """
@@ -103,7 +102,7 @@ class SimilarityEngine:
         driver = self.get_neo4j_driver()
 
         # Initialize an empty similarity matrix (N x N)
-        self.similarity_matrix = np.zeros((len(self.malware_paths), len(self.malware_paths)))
+        self.similarity_matrix = np.zeros((len(self.malware_attributes), len(self.malware_attributes)))
         # Optional: set the diagonal to 1 (self-similarity)
         np.fill_diagonal(self.similarity_matrix, 1.0)
 
@@ -182,7 +181,7 @@ class SimilarityEngine:
         self.log.info(f"Dynamic models imported : {dynamic_load_models}")
         model = dynamic_load_models[self.config["model"]["default"]]
 
-        model.run(self.malware_attributes, self.malware_paths, self.similarity_matrix)
+        model.run(self.malware_attributes, self.similarity_matrix)
 
     def run(self):
         self.neo4j.start_neo4j_container()
@@ -193,8 +192,8 @@ class SimilarityEngine:
         else:
             self.extract_features(self.config["samples"]["directory"], sampling=self.config["sampling"]["do_sampling"]) # TODO : move sampling arg to config file
 
-        self.log.debug(f"Malware paths found {self.malware_paths}")
-        self.log.info(f"Found {len(self.malware_paths)} PE binaries in {self.config['samples']['directory']}")
+        # self.log.debug(f"Malware paths found {self.malware_attributes}")
+        self.log.info(f"Found {len(self.malware_attributes)} PE binaries in {self.config['samples']['directory']}")
 
         # Save to pkl file
         if self.config["features_cache"]["save"]:
@@ -221,8 +220,8 @@ class SimilarityEngine:
 
         # Create a heatmap using seaborn
         ax = sns.heatmap(self.similarity_matrix,
-                         xticklabels=self.malware_paths,
-                         yticklabels=self.malware_paths,
+                         xticklabels=self.malware_attributes.keys(),
+                         yticklabels=self.malware_attributes.keys(),
                          cmap="YlGnBu",  # You can change the color map here
                          annot=False,  # Set to True to display the Jaccard index values, but makes it harder to read
                          fmt=".2f")  # Format the numbers to 2 decimal places

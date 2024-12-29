@@ -19,9 +19,8 @@ class LSH_Model:
 
 
 
-    def run(self, malware_attributes: dict[dict], malware_paths, similarity_matrix):
+    def run(self, malware_attributes: dict[dict], similarity_matrix):
         self.malware_attributes = malware_attributes
-        self.malware_paths = malware_paths
         self.similarity_matrix = similarity_matrix
 
         # key : malware name (str)
@@ -98,7 +97,8 @@ class LSH_Model:
                             self.session.execute_write(self.neo4j.create_relationship, malware1, malware2, jaccard_index)
 
                         # Update the similarity matrix
-                        index_1 = self.malware_paths.index(malware1)
-                        index_2 = self.malware_paths.index(malware2)
-                        self.similarity_matrix[index_1, index_2] = jaccard_index
-                        self.similarity_matrix[index_2, index_1] = jaccard_index
+                        # TODO solve attributeError : dict object has no attribute index
+                        #index_1 = self.malware_attributes.index(malware1)
+                        #index_2 = self.malware_attributes.index(malware2)
+                        #self.similarity_matrix[index_1, index_2] = jaccard_index
+                        #self.similarity_matrix[index_2, index_1] = jaccard_index
