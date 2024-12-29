@@ -74,6 +74,7 @@ class SimilarityEngine:
                         # INFO : malware_path : filename can't start with a number for Neo4J
                         self.malware_paths.append(filename)  # TODO : check use because key of another dict
                         self.malware_attributes[filename] = extractor.extract_features(fullpath)
+                        self.log.info("ici")
 
     def create_nodes(self, session): # TODO : move to neo4j file
         for path in self.malware_paths:
@@ -110,19 +111,16 @@ class SimilarityEngine:
 
         if d:
             try:
-                self.session = d
-
                 # Create nodes
                 self.create_nodes(d)
                 # Create relationships based on a specified model in config
-                # TODO : pass d as parameter and remove the self.session as global
-                self.run_sim_model()
+                self.run_sim_model(d)
             finally:
                 d.close()
                 self.log.info("Graph exported to Neo4j database")
                 self.log.info("Neo4J instance is accessible at http://localhost:7474/browser/")
 
-    def dynamic_load_models(self, directory: str) -> Dict[str, Callable]:
+    def dynamic_load_models(self, driver, directory: str) -> Dict[str, Callable]:
         instances = {}
 
         # Traverse the specified directory
@@ -152,7 +150,7 @@ class SimilarityEngine:
                         instance_args = []
                         # TODO : can be specific to import only the needed parameters to optimize
                         if 'session' in required_params:
-                            instance_args.append(self.session)
+                            instance_args.append(driver)
                         if 'neo4j' in required_params:
                             instance_args.append(self.neo4j)
                         if 'redis' in required_params:
@@ -177,10 +175,10 @@ class SimilarityEngine:
         return instances
 
 
-    def run_sim_model(self):
+    def run_sim_model(self, driver):
         # TODO : load model here instead of LSH
         # call the model
-        dynamic_load_models = self.dynamic_load_models(directory="models/")
+        dynamic_load_models = self.dynamic_load_models(driver, directory="models/")
         self.log.info(f"Dynamic models imported : {dynamic_load_models}")
         model = dynamic_load_models[self.config["model"]["default"]]
 
