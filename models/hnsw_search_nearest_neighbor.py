@@ -4,9 +4,10 @@ from engine.redis_storage import RedisStorage
 from utils.logger import Log
 import hnswlib
 from utils.config import Config
+from neo4j import Session
 
 class HnswSearchNearestNeighbor:
-    def __init__(self):
+    def __init__(self, session: Session, neo4j, redis):
         self.config = Config().get()
         self.redis_storage = RedisStorage()
         self.dim = self.config['hnsw']['dimension']  # Dimension of the MinHash signatures
@@ -16,7 +17,9 @@ class HnswSearchNearestNeighbor:
 
         self.index = hnswlib.Index(space='l2', dim=self.dim)  # Initialize HNSW index with L2 distance
         self.index.init_index(max_elements=self.max_elements, ef_construction=200, M=16)  # Adjust parameters as needed
-
+        self.neo4j = neo4j
+        self.session = session
+        self.redis_storage = redis
 
     def add_signature(self, malware_id, minhash_signature):
         # Use the current size of the index as the new index for the incoming ID

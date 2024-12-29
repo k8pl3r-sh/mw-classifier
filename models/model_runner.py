@@ -1,14 +1,16 @@
 import os
 import importlib
+
 from utils.logger import Log
+from utils.config import Config
 
 current_file_path = os.path.abspath(__file__)  # Absolute path of the current file
 MODELS_FOLDER = os.path.abspath(os.path.dirname(current_file_path))
 
 class ModelRunner:
-    def __init__(self, config: dict, model_name: str):
-        self.config = config
-        self.log = Log("FeaturesExtractor", config)
+    def __init__(self, model_name: str):
+        self.config = Config().get()
+        self.log = Log("FeaturesExtractor")
         self.model_name = model_name
         self.models = self._load_models()
 

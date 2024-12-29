@@ -24,7 +24,9 @@ hnsw:
   dimension: 128
   max_elements: 1000000
 model:
-  default: "minhash"
+  default: "LSH_Model"
   threshold: 0.6
 samples:
   directory: "SAMPLES/APT1_MALWARE_FAMILIES/"
+database:
+  redis: false

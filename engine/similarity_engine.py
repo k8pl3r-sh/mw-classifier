@@ -7,8 +7,6 @@ from neo4j.exceptions import TransactionError
 from features.features_extractor import FeaturesExtractor
 from utils.logger import Log
 from utils.tools import is_pe_file, filename_from_path
-from engine.minhashcustom import MinHashCustom
-from datasketch import MinHashLSH, MinHash
 from utils.config import Config
 import importlib.util
 import inspect
@@ -16,9 +14,8 @@ import inspect
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
-import pickle
+from pickle import dump, load
 from engine.redis_storage import RedisStorage
-from models.hnsw_search_nearest_neighbor import HnswSearchNearestNeighbor
 from typing import Callable, Dict
 
 class SimilarityEngine:
@@ -29,21 +26,17 @@ class SimilarityEngine:
         self.malware_paths = []  # where we'll store the malware file paths
         self.similarity_matrix = np.zeros((0, 0))
         self.malware_attributes = dict()  # where we'll store the malware's extracted features
-        self.minhash_custom = MinHashCustom()
-        self.minhash = MinHash(num_perm=128)
-
-        # WORK :
         self.redis_storage = RedisStorage()
-        self.hnsw_search = HnswSearchNearestNeighbor()
+
 
     def save_extracted_features(self, filename: str):
         with open(filename, 'wb') as fh:
-            pickle.dump((self.malware_attributes, self.malware_paths), fh)
+            dump((self.malware_attributes, self.malware_paths), fh)
         self.log.info(f"Extracted features saved to {filename}")
 
     def load_extracted_features(self, filename: str):
         with open(filename, 'rb') as fh:
-            self.malware_attributes, self.malware_paths = pickle.load(fh)
+            self.malware_attributes, self.malware_paths = load(fh)
         self.log.info(f"Extracted features loaded from {filename}")
 
     def get_neo4j_driver(self):
@@ -52,9 +45,6 @@ class SimilarityEngine:
         auth = (self.config['neo4j']['user'], self.config['neo4j']['password'])
         return GraphDatabase.driver(uri, auth=auth)
 
-    @staticmethod
-    def close_neo4j_driver(driver):
-        driver.close()
 
     def extract_features(self, target_directory: str, sampling: bool):
         """
@@ -105,10 +95,6 @@ class SimilarityEngine:
 
         This function scans the target directory for PE binaries, extracts their features,
         builds a similarity graph based on the Jaccard index of extracted strings, and exports the graph to Neo4j.
-
-        Args:
-            threshold (float, optional): The Jaccard index threshold for creating edges in the graph. Default is 0.8.
-            save (bool, optional): Whether to save the graph as a Cypher script. Default is False.
         """
 
 
@@ -120,20 +106,21 @@ class SimilarityEngine:
         # Optional: set the diagonal to 1 (self-similarity)
         np.fill_diagonal(self.similarity_matrix, 1.0)
 
-        with driver.session() as session:
+        d = driver.session()
 
-            # Create nodes
-            self.create_nodes(session)
+        if d:
+            try:
+                self.session = d
 
-            # Create relationships based on a specified model in config
-            self.run_sim_model(session)
-
-        SimilarityEngine.close_neo4j_driver(driver)
-        self.log.info("Graph exported to Neo4j database")
-
-        #if save:
-        #self.neo4j.save_graph_as_cypher(self.malware_paths, self.malware_attributes, self.config["model"]["threshold"])
-        self.log.info("Neo4J instance is accessible at http://localhost:7474/browser/")
+                # Create nodes
+                self.create_nodes(d)
+                # Create relationships based on a specified model in config
+                # TODO : pass d as parameter and remove the self.session as global
+                self.run_sim_model()
+            finally:
+                d.close()
+                self.log.info("Graph exported to Neo4j database")
+                self.log.info("Neo4J instance is accessible at http://localhost:7474/browser/")
 
     def dynamic_load_models(self, directory: str) -> Dict[str, Callable]:
         instances = {}
@@ -155,23 +142,31 @@ class SimilarityEngine:
 
                     # Ensure it's a class defined in the current module, not an imported class
                     if isinstance(attr, type) and attr.__module__ == module.__name__:
-                        # Check the init signature for required arguments
                         init_params = inspect.signature(attr.__init__).parameters
                         required_params = [
                             param for param, details in init_params.items()
                             if details.default == inspect.Parameter.empty and param != 'self'
                         ]
-                        instance_args = []
 
-                        # Instantiate the class with the required arguments
+                        # Pass only the parameters expected by the class's constructor
+                        instance_args = []
+                        # TODO : can be specific to import only the needed parameters to optimize
+                        if 'session' in required_params:
+                            instance_args.append(self.session)
+                        if 'neo4j' in required_params:
+                            instance_args.append(self.neo4j)
+                        if 'redis' in required_params:
+                            instance_args.append(self.redis_storage)
+
                         try:
+                            # Instantiate the class with the required arguments
                             instance = attr(*instance_args)
                             instances[f"{attr_name}"] = instance
                         except TypeError as e:
                             self.log.info(f"Skipping {attr_name} - error instantiating class: {str(e)}")
                             continue  # Skip this class if instantiation fails
 
-                        """
+                    """
                         # Load methods of the class
                         for method_name in dir(instance):
                             method = getattr(instance, method_name)
@@ -182,18 +177,14 @@ class SimilarityEngine:
         return instances
 
 
-    def run_sim_model(self, session):
+    def run_sim_model(self):
         # TODO : load model here instead of LSH
         # call the model
         dynamic_load_models = self.dynamic_load_models(directory="models/")
-        print(dynamic_load_models)
+        self.log.info(f"Dynamic models imported : {dynamic_load_models}")
+        model = dynamic_load_models[self.config["model"]["default"]]
 
-        # Chose the right model
-        model = dynamic_load_models["LSH_Model"]
-
-        # self.search_similarities_lsh(session=session)
-        # Run it
-        model.run(self.malware_attributes, self.malware_paths, session, self.similarity_matrix, self.neo4j)
+        model.run(self.malware_attributes, self.malware_paths, self.similarity_matrix)
 
     def run(self):
         self.neo4j.start_neo4j_container()

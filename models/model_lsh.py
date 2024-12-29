@@ -1,22 +1,29 @@
 
 import numpy as np
+from neo4j import Session
+
 from utils.logger import Log
 from utils.config import Config
 from datasketch import MinHashLSH, MinHash
 from engine.minhashcustom import MinHashCustom
 
+
 class LSH_Model:
-    def __init__(self):
+    def __init__(self, session: Session, neo4j, redis):
         self.config = Config().get()
         self.log = Log("LSH_Model")
         self.minhash_custom = MinHashCustom()
+        self.neo4j = neo4j
+        self.session = session
+        self.redis_storage = redis
 
 
-    def run(self, malware_attributes: dict[dict], malware_paths, session, similarity_matrix, neo4j):
+
+    def run(self, malware_attributes: dict[dict], malware_paths, similarity_matrix):
         self.malware_attributes = malware_attributes
         self.malware_paths = malware_paths
         self.similarity_matrix = similarity_matrix
-        self.neo4j = neo4j
+
         # key : malware name (str)
         # value : dict avec strings, KERNEL32.dll, SHELL32.dll
         # TODO simplify the features : one per key (here IAT has one key per DLL import
@@ -46,10 +53,12 @@ class LSH_Model:
             lsh.insert(malware, minhash)
 
             # WORK: Store the MinHash signature in Redis
-            try:
-                self.redis_storage.store_minhash_signature(malware, minhash)
-            except Exception as e:
-                self.log.error(f"Error {e} : Probably Redis docker not started via docker-compose up -d")
+            if self.config["database"]["redis"] == True:
+                try:
+                    self.redis_storage.store_minhash_signature(malware, minhash)
+                except Exception as e:
+                    self.log.error(f"Error {e} : Probably Redis docker not started via docker-compose up -d")
+
             # WORK: Add the MinHash signature to the HNSW index
             # self.hnsw_search.add_signature(malware, minhash)
 
@@ -86,7 +95,7 @@ class LSH_Model:
                             jaccard_indexes)  # mean of all features to have a global similarity index
 
                         if jaccard_index > self.config["model"]["threshold"]:
-                            session.execute_write(self.neo4j.create_relationship, malware1, malware2, jaccard_index)
+                            self.session.execute_write(self.neo4j.create_relationship, malware1, malware2, jaccard_index)
 
                         # Update the similarity matrix
                         index_1 = self.malware_paths.index(malware1)
