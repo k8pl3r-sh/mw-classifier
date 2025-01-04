@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 from engine.similarity_engine import SimilarityEngine
-from utils.tools import load_yml
 from time import time
 from memory_profiler import profile
 from utils.logger import Log

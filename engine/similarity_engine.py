@@ -45,7 +45,7 @@ class SimilarityEngine:
         return GraphDatabase.driver(uri, auth=auth)
 
 
-    def extract_features(self, target_directory: str, sampling: bool):
+    def extract_features(self):
         """
         Extract features from PE binaries in a target directory and store them in a dictionary.
         Parameters
@@ -57,18 +57,18 @@ class SimilarityEngine:
         -------
 
         """
-        self.log.info(f"Sampling is set to {sampling}")
+        self.log.info(f"Sampling is set to {self.config['sampling']['do_sampling']}")
 
         i = 0
         extractor = FeaturesExtractor(self.config)
-        for root, dirs, paths in os.walk(target_directory):
+        for root, dirs, paths in os.walk(self.config["samples"]["directory"]):
             for path in paths:
                 fullpath = os.path.join(root, path)
                 if is_pe_file(fullpath):  # if it is a PE
                     # TODO : add generalization (for ELF and so on)
                     i += 1
 
-                    if not sampling or i % self.config["sampling"]["modulo"] == 0:  # Echantillonage pour avoir un max de familles de malwares
+                    if not self.config["sampling"]["do_sampling"] or i % self.config["sampling"]["modulo"] == 0:  # Echantillonage pour avoir un max de familles de malwares
                         filename = filename_from_path(fullpath)
                         # INFO : malware_path : filename can't start with a number for Neo4J
                         # self.malware_paths.append(filename)  # TODO : check use because key of another dict
@@ -175,7 +175,6 @@ class SimilarityEngine:
 
 
     def run_sim_model(self, driver):
-        # TODO : load model here instead of LSH
         # call the model
         dynamic_load_models = self.dynamic_load_models(driver, directory="models/")
         self.log.info(f"Dynamic models imported : {dynamic_load_models}")
@@ -190,9 +189,8 @@ class SimilarityEngine:
         if self.config["features_cache"]["load"]:
             self.load_extracted_features(self.config["features_cache"]["filename"])
         else:
-            self.extract_features(self.config["samples"]["directory"], sampling=self.config["sampling"]["do_sampling"]) # TODO : move sampling arg to config file
+            self.extract_features()
 
-        # self.log.debug(f"Malware paths found {self.malware_attributes}")
         self.log.info(f"Found {len(self.malware_attributes)} PE binaries in {self.config['samples']['directory']}")
 
         # Save to pkl file
