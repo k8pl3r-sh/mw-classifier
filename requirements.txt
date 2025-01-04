@@ -2,18 +2,14 @@ neo4j~=5.24.0
 cysystemd
 lief~=0.15.1
 mmh3~=4.1.0
-matplotlib~=3.9.2
-networkx == 2.0
-pydot == 1.2.4
+matplotlib
 numpy~=2.1.0
 scikit-learn~=1.5.1
 seaborn~=0.13.2
 datasketch
 hnswlib
 redis
-qiling
 PyYAML~=6.0.2
-systemd~=0.17.1
 requests~=2.32.3
 pefile~=2024.8.26
 Flask~=3.0.3
