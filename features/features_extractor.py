@@ -17,7 +17,7 @@ FEATURES_FOLDER = os.path.abspath(os.path.dirname(current_file_path))
 class FeaturesExtractor:
     features: object
 
-    def __init__(self, config: dict):
+    def __init__(self):
         self.config = Config().get()
         self.log = Log("FeaturesExtractor")
         self.features = self._load_features()

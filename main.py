@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-from engine.similarity_engine import SimilarityEngine
 from time import time
 from memory_profiler import profile
+from engine.similarity_engine import SimilarityEngine
 from utils.logger import Log
 from utils.config import Config
 

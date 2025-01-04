@@ -24,4 +24,3 @@ class RedisStorage:
             return np.frombuffer(signature_bytes, dtype=np.uint32)  # Adjust dtype as needed
         self.log.warn(f'MinHash signature for {malware_id} not found in Redis.')
         return None
-
