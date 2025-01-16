@@ -60,7 +60,7 @@ class SimilarityEngine:
         self.log.info(f"Sampling is set to {self.config['sampling']['do_sampling']}")
 
         i = 0
-        extractor = FeaturesExtractor(self.config)
+        extractor = FeaturesExtractor()
         for root, dirs, paths in os.walk(self.config["samples"]["directory"]):
             for path in paths:
                 fullpath = os.path.join(root, path)
