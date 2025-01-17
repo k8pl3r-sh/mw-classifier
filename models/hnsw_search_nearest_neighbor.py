@@ -21,7 +21,7 @@ class HnswSearchNearestNeighbor:
         self.session = session
         self.redis_storage = redis
 
-    def add_signature(self, malware_id, minhash_signature):
+    def add_signature(self, malware_id, minhash_signature) -> None:
         # Use the current size of the index as the new index for the incoming ID
         current_index = self.index.get_current_count()
 
@@ -32,12 +32,12 @@ class HnswSearchNearestNeighbor:
         # Map the string malware_id to its index
         self.id_map[malware_id] = current_index
 
-    def query(self, query_hashvalues, k=5):
+    def query(self, query_hashvalues: str, k: int = 5) -> tuple[list, list]:
         # Query the HNSW index
         labels, distances = self.index.knn_query(query_hashvalues, k=k)
         # Convert labels from index back to original malware_id
         original_ids = [list(self.id_map.keys())[label] for label in labels[0]]
         return original_ids, distances[0]
 
-    def run(self):
+    def run(self) -> None:
         ...

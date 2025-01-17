@@ -78,7 +78,7 @@ class FeaturesExtractor:
 
         return extracted_features
 
-    def hash_features(self, feature_data: set):
+    def hash_features(self, feature_data: set) -> np.array:
         """
         Hash the extracted featues using mmh3
         Parameters

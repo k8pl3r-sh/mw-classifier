@@ -48,7 +48,7 @@ class Neo4jGraph:
 
         # Waiting for Neo4J will be made in another function to delay the pending time
 
-    def check_up(self):
+    def check_up(self) -> None:
         # En réalité ne fait pas gagner tant de temps car peu de samples
         self.log.info("Waiting for Neo4j to start...")
         while True:
@@ -62,7 +62,7 @@ class Neo4jGraph:
 
         self.log.info("Neo4j is up and running.")
 
-    def get_color_by_label(self, label: str):
+    def get_color_by_label(self, label: str) -> str:
         if label in self.labels_colors:
             return self.labels_colors[label]
         else:
@@ -80,7 +80,7 @@ class Neo4jGraph:
         # TODO change label
         return f"MATCH (a:Malware {{path: '{path1}'}}), (b:Malware {{path: '{path2}'}}) CREATE (a)-[:SIMILAR {{weight: {weight}}}]->(b);\n"
 
-    def create_node(self, tx: Transaction, label: str, properties: dict):
+    def create_node(self, tx: Transaction, label: str, properties: dict) -> None:
         # properties : dict with keys and values of properties names and values
 
         query = (
@@ -93,14 +93,14 @@ class Neo4jGraph:
             self.log.error(f"Error creating node with query: {query}")
 
     @staticmethod
-    def create_relationship(tx: Transaction, path1: str, path2: str, weight: float):
+    def create_relationship(tx: Transaction, path1: str, path2: str, weight: float) -> None:
         query = (
             "MATCH (a {path: $path1}), (b {path: $path2}) "
             "CREATE (a)-[:SIMILAR {weight: $weight}]->(b)"
         )
         tx.run(query, path1=path1, path2=path2, weight=weight)
 
-    def save_graph_as_cypher(self, malware_paths: list[str], malware_attributes, threshold: float, filename: str = "graph.cypher"):
+    def save_graph_as_cypher(self, malware_paths: list[str], malware_attributes, threshold: float, filename: str = "graph.cypher") -> None:
         # TODO : redundant code here
         """
         Save the graph as a Cypher script for later import into Neo4j.

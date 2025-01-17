@@ -14,7 +14,7 @@ class ModelRunner:
         self.model_name = model_name
         self.models = self._load_models()
 
-    def run_model(self):
+    def run_model(self) -> None:
         if self.model_name in self.models:
             self.models[self.model_name].run() # need to pass as parameters malwares attributes
 

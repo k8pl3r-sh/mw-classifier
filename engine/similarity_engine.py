@@ -28,24 +28,24 @@ class SimilarityEngine:
         self.redis_storage = RedisStorage()
 
 
-    def save_extracted_features(self, filename: str):
+    def save_extracted_features(self, filename: str) -> None:
         with open(filename, 'wb') as fh:
             dump(self.malware_attributes, fh)
         self.log.info(f"Extracted features saved to {filename}")
 
-    def load_extracted_features(self, filename: str):
+    def load_extracted_features(self, filename: str) -> None:
         with open(filename, 'rb') as fh:
             self.malware_attributes = load(fh)
         self.log.info(f"Extracted features loaded from {filename}")
 
-    def get_neo4j_driver(self):
+    def get_neo4j_driver(self) -> GraphDatabase.driver:
         self.neo4j.check_up()  # Check if Neo4J is up and running
         uri = self.config['neo4j']['uri']
         auth = (self.config['neo4j']['user'], self.config['neo4j']['password'])
         return GraphDatabase.driver(uri, auth=auth)
 
 
-    def extract_features(self):
+    def extract_features(self) -> None:
         """
         Extract features from PE binaries in a target directory and store them in a dictionary.
         Parameters
@@ -75,7 +75,7 @@ class SimilarityEngine:
                         self.malware_attributes[filename] = extractor.extract_features(fullpath)
                         self.log.info("ici")
 
-    def create_nodes(self, session): # TODO : move to neo4j file
+    def create_nodes(self, session: GraphDatabase.driver) -> None: # TODO : move to neo4j file
         for key in self.malware_attributes.keys():
             properties = {
                 'family': key.split("_")[0],
@@ -89,7 +89,7 @@ class SimilarityEngine:
             except TransactionError:
                 self.log.error(f"Error creating node for {key}")
 
-    def create_similarity_graph(self):
+    def create_similarity_graph(self) -> None:
         """
         Create a similarity graph for PE binaries in a target directory and export it to a Neo4j database.
 
@@ -119,7 +119,7 @@ class SimilarityEngine:
                 self.log.info("Graph exported to Neo4j database")
                 self.log.info("Neo4J instance is accessible at http://localhost:7474/browser/")
 
-    def dynamic_load_models(self, driver, directory: str) -> Dict[str, Callable]:
+    def dynamic_load_models(self, driver: GraphDatabase.driver, directory: str) -> Dict[str, Callable]:
         instances = {}
 
         # Traverse the specified directory
@@ -174,7 +174,7 @@ class SimilarityEngine:
         return instances
 
 
-    def run_sim_model(self, driver):
+    def run_sim_model(self, driver: GraphDatabase.driver) -> None:
         # call the model
         dynamic_load_models = self.dynamic_load_models(driver, directory="models/")
         self.log.info(f"Dynamic models imported : {dynamic_load_models}")
@@ -182,7 +182,7 @@ class SimilarityEngine:
 
         model.run(self.malware_attributes, self.similarity_matrix)
 
-    def run(self):
+    def run(self) -> None:
         self.neo4j.start_neo4j_container()
 
         # Load file pkl
@@ -199,7 +199,7 @@ class SimilarityEngine:
 
         self.create_similarity_graph()
 
-    def similarity_matrix_heatmap(self, filename: str):
+    def similarity_matrix_heatmap(self, filename: str) -> None:
         """
         Convert the similarity matrix into a heatmap graphic and save it to a file.
 

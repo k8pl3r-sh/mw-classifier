@@ -19,7 +19,7 @@ class LSH_Model:
 
 
 
-    def run(self, malware_attributes: dict[dict], similarity_matrix):
+    def run(self, malware_attributes: dict[dict], similarity_matrix) -> None:
         self.malware_attributes = malware_attributes
         self.similarity_matrix = similarity_matrix
 
