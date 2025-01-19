@@ -16,7 +16,7 @@ class RedisStorage:
         self.r.set(key, minhash_signature.hashvalues.tobytes())
         self.log.debug(f'Stored MinHash signature for {malware_id} in Redis.')
 
-    def get_minhash_signature(self, malware_id: str) -> np.array | None:
+    def get_minhash_signature(self, malware_id: str):
         # Retrieve the MinHash signature from Redis
         key = f'malware:{malware_id}:minhash'
         signature_bytes = self.r.get(key)
