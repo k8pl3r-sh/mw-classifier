@@ -50,8 +50,6 @@ class SimilarityEngine:
         Extract features from PE binaries in a target directory and store them in a dictionary.
         Parameters
         ----------
-        target_directory
-        sampling : bool, need to be specified in order to avoid running on all samples at each development iteration
 
         Returns
         -------
