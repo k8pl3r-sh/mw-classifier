@@ -1,3 +1,5 @@
+import sys
+
 from neo4j.exceptions import CypherSyntaxError
 from neo4j import Transaction
 import itertools
@@ -21,16 +23,23 @@ class Neo4jGraph:
     def check_up(self) -> None:
         # En réalité ne fait pas gagner tant de temps car peu de samples
         self.log.info("Waiting for Neo4j to start...")
-        while True:
+        i = 0
+        while i < 60:
             try:
                 response = get("http://localhost:7474")
                 if response.status_code == 200:
+                    self.log.info("Neo4j is up and running.")
                     break
             except ConnectionError:
                 pass
             sleep(1)
+            i += 1
 
-        self.log.info("Neo4j is up and running.")
+        if i == 60:
+            self.log.info("Can't reach Neo4J database : TIMEOUT 60 seconds")
+            sys.exit()
+
+
 
     def get_color_by_label(self, label: str) -> str:
         if label in self.labels_colors:
