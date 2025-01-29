@@ -172,7 +172,6 @@ class SimilarityEngine:
         model.run(self.malware_attributes, self.similarity_matrix)
 
     def run(self) -> None:
-        self.neo4j.start_neo4j_container()
 
         # Load file pkl
         if self.config["features_cache"]["load"]:

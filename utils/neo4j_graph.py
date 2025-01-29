@@ -19,35 +19,6 @@ class Neo4jGraph:
         self.config = Config().get()
         self.labels_colors = {}  # Store labels colors if already set
 
-    def start_neo4j_container(self):
-        """
-        Start a Neo4j Docker container. If an existing container named 'neo4j' is found, it will be removed first.
-
-        This method ensures that a new Neo4j container is running and waits until it is accessible at http://localhost:7474.
-
-        Examples:
-            # >>> neo = Neo4jUtility(config)
-            # >>> neo.start_neo4j_container()
-            Removing existing Neo4j container...
-            Starting a new Neo4j container...
-            Waiting for Neo4j to start...
-            Neo4j is up and running.
-        """
-        def run_command(command: str) -> str:
-            process = run(command, shell=True, check=True, stdout=PIPE, stderr=PIPE)
-            return process.stdout.decode('utf-8')
-
-        self.log.info("Removing existing Neo4j container...")
-        try:
-            run_command('docker rm --force neo4j')
-        except CalledProcessError:
-            self.log.info("No existing container to remove or failed to remove it.")
-
-        self.log.info("Starting a new Neo4j container...")
-        run_command('docker run --rm --name neo4j -p 7474:7474 -p 7687:7687 -d -e NEO4J_AUTH=neo4j/password neo4j:latest')
-
-        # Waiting for Neo4J will be made in another function to delay the pending time
-
     def check_up(self) -> None:
         # En réalité ne fait pas gagner tant de temps car peu de samples
         self.log.info("Waiting for Neo4j to start...")

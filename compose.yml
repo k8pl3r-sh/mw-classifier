@@ -1,21 +1,40 @@
----
 services:
   redis:
     image: redis:latest
     container_name: redis
     profiles: [redis]
     ports:
-      - "6379:6379"  # Expose Redis on port 6379
+      - "6379:6379"
     volumes:
-      - redis_data:/data  # Persist Redis data
+      - redis_data:/data
     networks:
       - redis_network
 
+  neo4j:
+    image: neo4j:latest
+    container_name: neo4j
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      - NEO4J_AUTH=neo4j/password
+    profiles: [neo4j]
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+      - neo4j_conf:/conf
+    networks:
+      - neo4j_network
+
 volumes:
-  redis_data:  # Define a volume for persistent data storage
+  redis_data:
+  neo4j_data:
+  neo4j_logs:
+  neo4j_conf:
 
 networks:
-  redis_network:  # Define a network for Redis
+  redis_network:
+  neo4j_network:
 
 # docker exec -it redis redis-cli
 # PING
