@@ -17,27 +17,8 @@ class LSH_Model:
         self.session = session
         self.redis_storage = redis
 
-
-
-    def run(self, malware_attributes: dict[dict], similarity_matrix) -> None:
-        self.malware_attributes = malware_attributes
-        self.similarity_matrix = similarity_matrix
-
-        # key : malware name (str)
-        # value : dict avec strings, KERNEL32.dll, SHELL32.dll
-        # TODO simplify the features : one per key (here IAT has one key per DLL import
-        # def search_similarities_lsh(self, session):
-
-        # Initialize LSH
-        # Doc : http://ekzhu.com/datasketch/lsh.html
-        try:
-            lsh = MinHashLSH(threshold=self.config["model"]["threshold"], num_perm=128)
-        except ValueError:
-            self.log.error(" The number of bands are too small (b < 2)")
-            return
+    def generate_minhash_signatures(self, lsh: MinHashLSH):
         minhashes = {}
-
-        # Generate MinHash signatures using the datasketch MinHash object and insert them into LSH
         for malware, attributes in self.malware_attributes.items():
             minhash = MinHash(num_perm=128)
 
@@ -61,7 +42,9 @@ class LSH_Model:
             # WORK: Add the MinHash signature to the HNSW index
             # self.hnsw_search.add_signature(malware, minhash)
 
-        # Now query the LSH for similar malwares and create relationships
+        return minhashes
+
+    def create_relationships(self, lsh: MinHashLSH, minhashes: dict):
         for malware1, minhash1 in minhashes.items():
             similar_malwares = lsh.query(minhash1)
 
@@ -102,3 +85,27 @@ class LSH_Model:
                         #index_2 = self.malware_attributes.index(malware2)
                         #self.similarity_matrix[index_1, index_2] = jaccard_index
                         #self.similarity_matrix[index_2, index_1] = jaccard_index
+
+    def run(self, malware_attributes: dict[dict], similarity_matrix) -> None:
+        self.malware_attributes = malware_attributes
+        self.similarity_matrix = similarity_matrix
+
+        # key : malware name (str)
+        # value : dict avec strings, KERNEL32.dll, SHELL32.dll
+        # TODO simplify the features : one per key (here IAT has one key per DLL import
+        # def search_similarities_lsh(self, session):
+
+        # Initialize LSH
+        # Doc : http://ekzhu.com/datasketch/lsh.html
+        try:
+            lsh = MinHashLSH(threshold=self.config["model"]["threshold"], num_perm=128)
+        except ValueError:
+            self.log.error(" The number of bands are too small (b < 2)")
+            return
+
+
+        # Generate MinHash signatures using the datasketch MinHash object and insert them into LSH
+        minhashes = self.generate_minhash_signatures(lsh)
+
+        # Now query the LSH for similar malwares and create relationships
+        self.create_relationships(lsh, minhashes)
