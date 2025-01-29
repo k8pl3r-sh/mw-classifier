@@ -19,18 +19,11 @@ services:
     environment:
       - NEO4J_AUTH=neo4j/password
     profiles: [neo4j]
-    volumes:
-      - neo4j_data:/data
-      - neo4j_logs:/logs
-      - neo4j_conf:/conf
     networks:
       - neo4j_network
 
 volumes:
   redis_data:
-  neo4j_data:
-  neo4j_logs:
-  neo4j_conf:
 
 networks:
   redis_network:
