@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import os
 from utils.logger import Log
-from utils.config import Config
 
 class Strings:
     def __init__(self):

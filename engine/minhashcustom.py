@@ -3,7 +3,8 @@ import numpy as np
 
 """
 This optimization needs to be really well explained because it is a bit complex, but very efficient.
-It reduce exec time more than half on APT1 family samples."""
+It reduce exec time more than half on APT1 family samples.
+"""
 
 
 class MinHashCustom:

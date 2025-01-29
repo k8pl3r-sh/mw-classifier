@@ -29,13 +29,13 @@ class SimilarityEngine:
 
 
     def save_extracted_features(self, filename: str) -> None:
-        with open(filename, 'wb') as fh:
-            dump(self.malware_attributes, fh)
+        with open(filename, 'wb') as f:
+            dump(self.malware_attributes, f)
         self.log.info(f"Extracted features saved to {filename}")
 
     def load_extracted_features(self, filename: str) -> None:
-        with open(filename, 'rb') as fh:
-            self.malware_attributes = load(fh)
+        with open(filename, 'rb') as f:
+            self.malware_attributes = load(f)
         self.log.info(f"Extracted features loaded from {filename}")
 
     def get_neo4j_driver(self) -> GraphDatabase.driver:
@@ -70,10 +70,7 @@ class SimilarityEngine:
 
                     if not self.config["sampling"]["do_sampling"] or i % self.config["sampling"]["modulo"] == 0:  # Echantillonage pour avoir un max de familles de malwares
                         filename = filename_from_path(fullpath)
-                        # INFO : malware_path : filename can't start with a number for Neo4J
-                        # self.malware_paths.append(filename)  # TODO : check use because key of another dict
                         self.malware_attributes[filename] = extractor.extract_features(fullpath)
-                        self.log.info("ici")
 
     def create_nodes(self, session: GraphDatabase.driver) -> None: # TODO : move to neo4j file
         for key in self.malware_attributes.keys():
@@ -84,6 +81,7 @@ class SimilarityEngine:
             }
 
             label = key.split("_")[0].replace("-", "_")  # '-' not allowed in nodes names on neo4j
+            # TODO : Check that labels doesn't start by a number, not allowed by Neo4j
             try:
                 session.execute_write(self.neo4j.create_node, label, properties)
             except TransactionError:
@@ -110,7 +108,6 @@ class SimilarityEngine:
 
         if d:
             try:
-                # Create nodes
                 self.create_nodes(d)
                 # Create relationships based on a specified model in config
                 self.run_sim_model(d)
@@ -122,7 +119,7 @@ class SimilarityEngine:
     def dynamic_load_models(self, driver: GraphDatabase.driver, directory: str) -> Dict[str, Callable]:
         instances = {}
 
-        # Traverse the specified directory
+        # Traverse the specified directory for models
         for filename in os.listdir(directory):
             if filename.endswith(".py") and filename != "model_runner.py":
                 module_name = filename[:-3]  # Remove the '.py' extension
@@ -161,21 +158,13 @@ class SimilarityEngine:
                             instances[f"{attr_name}"] = instance
                         except TypeError as e:
                             self.log.info(f"Skipping {attr_name} - error instantiating class: {str(e)}")
-                            continue  # Skip this class if instantiation fails
-
-                    """
-                        # Load methods of the class
-                        for method_name in dir(instance):
-                            method = getattr(instance, method_name)
-                            if callable(method) and not method_name.startswith("__"):
-                                functions[f"{attr_name}.{method_name}"] = method
-                        """
+                            continue  # Skip the model if instantiation fails
 
         return instances
 
 
     def run_sim_model(self, driver: GraphDatabase.driver) -> None:
-        # call the model
+        # Load models, by default all
         dynamic_load_models = self.dynamic_load_models(driver, directory="models/")
         self.log.info(f"Dynamic models imported : {dynamic_load_models}")
         model = dynamic_load_models[self.config["model"]["default"]]

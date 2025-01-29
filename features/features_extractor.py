@@ -59,7 +59,7 @@ class FeaturesExtractor:
         Returns
         -------
         """
-        # Liste de fichiers, liste de features strings -> convert pour les objects
+
         # retourne dict avec 'feature': {dict retourné}
         extracted_features = {}
 
@@ -91,35 +91,17 @@ class FeaturesExtractor:
         np.ndarray
             A boolean array indicating the presence (1) or absence (0) of features.
         """
-        # TODO : Reprendre le code du FeatureHasher du basic detector
 
-        # features1 = ["hello", "world", "test", "binary"]
+        # Define a fixed length for hashed feature vector
+        vector_length = 1024
 
-        # Transform strings into hashed features
-
-        # Convert set to dict (depuis, ça fonctionne pas
-        # Convert set to dictionary format for hashing (with values set to 1)
-        # dict_input = {item: 1 for item in feature_data}
-        # hashed_features = self.hasher_string.transform([dict_input]).toarray()[0]
-
-        # Convert the hashed vectors to boolean (0 or 1) to represent the presence/absence of a feature
-        # feature_bool = hashed_features > 0
-
-        # Compute Jaccard similarity later
-        # return feature_bool
-
-        # UPDATED :
-        # Define a fixed length for your hashed feature vector
-        vector_length = 1024  # You can adjust this size based on your requirements
-
-        # Create an empty binary vector to represent the presence/absence of hashed features
         feature_vector = np.zeros(vector_length, dtype=bool)
 
         # Hash each feature using mmh3 and map the hash value to a position in the binary vector
-        # for feature in feature_data: It is a set not a dict right now
+        # for feature in feature_data: It is a set not a dict rn
         for feature in feature_data:
-            # Ensure that the feature is a string (or convert it to string)
-            feature = str(feature)  # check that the string is a string
+            # Ensure that the feature is a string
+            feature = str(feature)
 
             # Use mmh3 to hash the feature and get a positive integer (32-bit)
             hashed_value = mmh3.hash(feature)
