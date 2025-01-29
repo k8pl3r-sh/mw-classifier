@@ -5,7 +5,6 @@ import itertools
 from utils.config import Config
 from utils.logger import Log
 
-from subprocess import run, CalledProcessError, PIPE
 from time import sleep
 from requests import get, ConnectionError
 from utils.tools import generate_hex_color
