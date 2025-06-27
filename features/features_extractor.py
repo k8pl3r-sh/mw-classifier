@@ -69,12 +69,15 @@ class FeaturesExtractor:
 
             # Ici de l'objet 'feature' on appelle sa méthode d'extraction qui retourne un set
             temp = self.features[feature].extract(filename)
-            # must hash a set
-            for element in temp.keys():
-                hashed = self.hash_features(temp[element])
-                minhashes = self.minhash.generate_minhash_signature(hashed)
-            # need to change here to have multiple features
-                extracted_features[element] = minhashes
+
+            if self.features[feature].is_hashable: # must hash a set TODO here patch
+                for element in temp.keys():
+                    hashed = self.hash_features(temp[element])
+                    minhashes = self.minhash.generate_minhash_signature(hashed)
+                # need to change here to have multiple features
+                    extracted_features[element] = minhashes
+            else:
+                extracted_features[feature] = temp
 
         return extracted_features
 

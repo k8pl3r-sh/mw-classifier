@@ -5,9 +5,11 @@ from utils.logger import Log
 class Strings:
     def __init__(self):
         self.log = Log("Strings")
+        self.is_hashable = True
 
     def __repr__(self):
         return "Strings"
+
 
     def extract(self, filename: str) -> dict | None:
         """

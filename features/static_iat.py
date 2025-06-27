@@ -7,9 +7,11 @@ import lief  # https://lief.re/doc/latest/tutorials/01_play_with_formats.html
 class StaticIat:
     def __init__(self):
         self.log = Log("StaticIAT")
+        self.is_hashable = True
 
     def __repr__(self):
         return "StaticIat"
+
 
     def extract(self, filename: str) -> dict[str, list[str]]:
         """

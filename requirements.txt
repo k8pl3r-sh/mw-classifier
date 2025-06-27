@@ -14,3 +14,7 @@ requests
 pefile
 Flask
 memory_profiler
+networkx
+pydot
+r2pipe
+python-Levenshtein
