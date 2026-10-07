@@ -6,29 +6,41 @@ imports it without registering anything to run.
 """
 
 import numpy as np
+import mmh3
+
+from utils.config import Config
+
+HASH_DIM_DEFAULT = 16384  # 2**14 columns for the hashing trick
 
 
-def build_feature_matrix(malware_attributes: dict):
+def build_feature_matrix(malware_attributes: dict, hash_dim: int = None):
     """
-    Build a binary presence/absence feature matrix from the token sets.
+    Build a binary token-incidence matrix via the hashing trick.
+
+    Every token (prefixed with its feature name, like the LSH/Classifier
+    MinHash) is hashed to a column; the cell is 1 if the sample contains a token
+    hashing there. This exposes the *content* of the features (strings, call
+    graph, imports...) to the clustering models, instead of a single
+    present/absent bit per feature key. Collisions are the usual hashing-trick
+    trade-off; raise ``hash_dim`` to reduce them.
 
     Returns
     -------
-    X : np.ndarray of shape (n_samples, n_features), dtype int (0/1)
+    X : np.ndarray of shape (n_samples, hash_dim), dtype uint8 (0/1)
     malwares : list[str]  malware names, row order of X
-    feature_list : list[str]  feature keys, column order of X
+    columns : None  (columns are hashed buckets, not named features)
     """
-    feature_list = sorted({
-        feat for attrs in malware_attributes.values() for feat in attrs.keys()
-    })
+    if hash_dim is None:
+        hash_dim = Config().get().get("clustering", {}).get("hash_dim", HASH_DIM_DEFAULT)
+
     malwares = list(malware_attributes.keys())
-    X = np.zeros((len(malwares), len(feature_list)), dtype=int)
+    X = np.zeros((len(malwares), hash_dim), dtype=np.uint8)
     for i, mw in enumerate(malwares):
-        attrs = malware_attributes[mw]
-        for j, feat in enumerate(feature_list):
-            if attrs.get(feat):
-                X[i, j] = 1
-    return X, malwares, feature_list
+        for feature_name, tokens in malware_attributes[mw].items():
+            for token in tokens:
+                idx = mmh3.hash(f"{feature_name}:{token}") % hash_dim
+                X[i, idx] = 1
+    return X, malwares, None
 
 
 def _jaccard(xa: np.ndarray, xb: np.ndarray) -> float:

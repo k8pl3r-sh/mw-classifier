@@ -5,6 +5,7 @@ from neo4j import Session
 
 from utils.logger import Log
 from utils.config import Config
+from models.clustering_utils import build_feature_matrix
 
 
 class KMeans_Model_Unsupervised:
@@ -14,27 +15,6 @@ class KMeans_Model_Unsupervised:
         self.neo4j = neo4j
         self.session = session
         self.redis_storage = redis
-
-    def _build_feature_matrix(self, malware_attributes: dict) -> (np.ndarray, list, list):
-        """
-        Construct a binary feature matrix for clustering.
-
-        Returns:
-            X: ndarray of shape (n_samples, n_features)
-            malwares: list of malware names in order
-            feature_list: list of feature keys in order
-        """
-        feature_list = sorted({
-            feat for attrs in malware_attributes.values() for feat in attrs.keys()
-        })
-        malwares = list(malware_attributes.keys())
-        X = np.zeros((len(malwares), len(feature_list)), dtype=int)
-        for i, mw in enumerate(malwares):
-            attrs = malware_attributes[mw]
-            for j, feat in enumerate(feature_list):
-                vals = attrs.get(feat, [])
-                X[i, j] = 1 if any(vals) else 0
-        return X, malwares, feature_list
 
     def _find_optimal_k(self, X: np.ndarray, k_min: int = 2, k_max: int = 10) -> int:
         """
@@ -58,7 +38,7 @@ class KMeans_Model_Unsupervised:
 
     def run(self, malware_attributes: dict, similarity_matrix=None) -> None:
         try:
-            X, malwares, feature_list = self._build_feature_matrix(malware_attributes)
+            X, malwares, _ = build_feature_matrix(malware_attributes)
         except Exception as e:
             self.log.error(f"Error building feature matrix: {e}")
             return

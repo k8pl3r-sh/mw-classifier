@@ -3,18 +3,18 @@
 Document de référence sur les limites de chaque modèle de similarité et des
 features d'extraction. À tenir à jour quand le comportement change.
 
-> **Limite transverse la plus importante.** Les modèles de *clustering*
-> (`KMeans_Model`, `KMeans_Model_Unsupervised`, `Agglomerative_Model`,
-> `DBSCAN_Model`, `HDBSCAN_Model`) travaillent sur une matrice binaire de
-> **présence/absence des clés de feature** (`clustering_utils.build_feature_matrix`,
-> `X[i,j] = 1 if attrs.get(feat) else 0`). Pour une feature qui n'expose qu'une
-> seule clé (`strings`, `call_graph`, `imphash`, `pe_sections`, `rich_header`,
-> `pe_resources`), **tout le contenu riche est réduit à un seul bit** « présent /
-> absent ». Seuls `static_iat` (une clé par DLL) apporte plusieurs colonnes.
-> Conséquence : le signal fin (code partagé du call graph, chaînes communes…)
-> n'est **pas** exploité par le clustering — seuls `LSH_Model` et le `Classifier`
-> l'utilisent via le MinHash par token. C'est le principal plafond de qualité du
-> clustering, à lever en construisant la matrice à partir des tokens hashés.
+> **Représentation du clustering (résolu, nouveau compromis).** Les modèles de
+> *clustering* (`KMeans_Model`, `KMeans_Model_Unsupervised`, `Agglomerative_Model`,
+> `DBSCAN_Model`, `HDBSCAN_Model`) utilisaient à l'origine une matrice binaire de
+> **présence/absence des clés de feature** (tout le contenu riche réduit à 1 bit).
+> C'est désormais corrigé : `clustering_utils.build_feature_matrix` applique le
+> **hashing trick** — chaque token (préfixé par sa feature, comme le MinHash) est
+> haché vers une colonne parmi `clustering.hash_dim` (défaut 16384), incidence
+> binaire. Le contenu (strings, call graph, imports…) est donc exploité par le
+> clustering. **Nouveau compromis** : les **collisions de hachage** (deux tokens →
+> même colonne) ; augmenter `hash_dim` les réduit au prix de la mémoire. Les
+> features très verbeuses (`strings`, `call_graph`) peuvent saturer les colonnes
+> et rapprocher artificiellement les échantillons si `hash_dim` est trop petit.
 
 ---
 
@@ -31,7 +31,7 @@ features d'extraction. À tenir à jour quand le comportement change.
   au très grand ensemble de tokens peut dominer.
 
 ### KMeans_Model (k fixé)
-- Représentation présence/absence grossière (cf. limite transverse).
+- Matrice tokens hachés (cf. note représentation) : sensible aux collisions.
 - `n_clusters` doit être connu d'avance.
 - KMeans euclidien sur données binaires est mal adapté (pas de métrique Jaccard).
 - Tous les échantillons sont forcés dans un cluster (pas de notion de bruit /
@@ -39,14 +39,13 @@ features d'extraction. À tenir à jour quand le comportement change.
 - Résultat dépendant de `random_state`.
 
 ### KMeans_Model_Unsupervised
-- Mêmes limites de représentation que KMeans.
+- Même matrice de tokens hachés que KMeans.
 - Recherche de `k` par silhouette = `O(k)` ré-entraînements (lent) et la
   silhouette est peu fiable sur binaire/euclidien.
 - Force aussi tous les échantillons dans un cluster.
 
 ### Agglomerative_Model
-- Distance Jaccard **pré-calculée** mais toujours sur la matrice présence/absence
-  grossière.
+- Distance Jaccard **pré-calculée** sur la matrice de tokens hachés.
 - Matrice de distances `O(n²)` en mémoire → ne passe pas à l'échelle sur de gros
   corpus.
 - `n_clusters` requis ; linkage `average` arbitraire (choix à justifier).
@@ -56,12 +55,10 @@ features d'extraction. À tenir à jour quand le comportement change.
 - Mais `eps` très difficile à régler sur du binaire creux : résultat extrêmement
   sensible à `dbscan_eps` / `dbscan_min_samples` (tout en un cluster ou tout en
   bruit).
-- Représentation grossière (cf. limite transverse).
 
 ### HDBSCAN_Model
 - Nécessite scikit-learn ≥ 1.3 (import paresseux : sinon le modèle se saute).
-- Gère la densité variable mieux que DBSCAN, mais reste limité par la
-  représentation grossière.
+- Gère la densité variable mieux que DBSCAN.
 - Sensible à `hdbscan_min_cluster_size` ; `O(n²)` sur distance pré-calculée.
 
 ### Classifier (k-NN, attribution d'un échantillon)
@@ -87,7 +84,6 @@ features d'extraction. À tenir à jour quand le comportement change.
 - Appels **indirects** (`call eax`, `call [mem]`) ignorés → arêtes manquantes.
 - Dépend de capstone/pefile (import paresseux : renvoie `{}` si absent).
 - Cap à `MAX_INSTRUCTIONS = 300000` : tronque les très gros binaires.
-- Signal riche **non exploité par le clustering** (cf. limite transverse).
 
 ### static_iat
 - PE : imports groupés par DLL (une clé par DLL). ELF/Mach-O : API abstraite LIEF

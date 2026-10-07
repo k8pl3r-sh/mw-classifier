@@ -34,6 +34,8 @@ model:
   dbscan_eps: 0.5                # DBSCAN_Model: max Jaccard distance within a cluster
   dbscan_min_samples: 2          # DBSCAN_Model: min samples to form a dense region
   hdbscan_min_cluster_size: 2    # HDBSCAN_Model: smallest cluster size
+clustering:
+  hash_dim: 16384                # hashing-trick dimension for the clustering feature matrix
 samples:
   directory: "SAMPLES/APT1_MALWARE_FAMILIES/"
 database:
