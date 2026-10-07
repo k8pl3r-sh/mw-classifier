@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
+import argparse
 from time import time
-from memory_profiler import profile
 from engine.similarity_engine import SimilarityEngine
 from utils.logger import Log
 from utils.config import Config
@@ -11,7 +11,6 @@ class Main:
     def __init__(self):
         self.log = Log("Main")
 
-    @profile
     def main(self):
         self.log.info(f"Main Started {Config().get()}")
         start_time = time()
@@ -27,6 +26,16 @@ class Main:
 
 
 if __name__ == "__main__":
-    # TODO : add argparse to do --debug and --optimize
+    parser = argparse.ArgumentParser(description="Malware similarity engine")
+    parser.add_argument(
+        "--optimize", action="store_true",
+        help="run under memory_profiler to report per-line memory usage"
+    )
+    args = parser.parse_args()
+
     m = Main()
-    m.main()
+    run = m.main
+    if args.optimize:
+        from memory_profiler import profile
+        run = profile(run)
+    run()
