@@ -116,6 +116,8 @@ class SimilarityEngine:
 
         if d:
             try:
+                # Start from an empty graph so successive runs/models don't mix
+                d.execute_write(self.neo4j.clear_graph)
                 self.create_nodes(d)
                 # Create relationships based on a specified model in config
                 self.run_sim_model(d)

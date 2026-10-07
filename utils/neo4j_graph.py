@@ -80,6 +80,11 @@ class Neo4jGraph:
         tx.run(query, path1=path1, path2=path2, weight=weight)
 
     @staticmethod
+    def clear_graph(tx: Transaction) -> None:
+        """Remove every node and relationship, for a fresh graph at each run."""
+        tx.run("MATCH (n) DETACH DELETE n")
+
+    @staticmethod
     def merge_cluster_node(tx: Transaction, cluster_id: int) -> None:
         """Create a Cluster node identified by its id, idempotently (no duplicates on re-run)."""
         tx.run("MERGE (c:Cluster {id: $id})", id=cluster_id)
