@@ -118,6 +118,7 @@ class SimilarityEngine:
             try:
                 # Start from an empty graph so successive runs/models don't mix
                 d.execute_write(self.neo4j.clear_graph)
+                d.execute_write(self.neo4j.ensure_constraints)
                 self.create_nodes(d)
                 # Create relationships based on a specified model in config
                 self.run_sim_model(d)

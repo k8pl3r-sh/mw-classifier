@@ -59,15 +59,25 @@ class Neo4jGraph:
         # TODO change label
         return f"MATCH (a:Malware {{path: '{path1}'}}), (b:Malware {{path: '{path2}'}}) CREATE (a)-[:SIMILAR {{weight: {weight}}}]->(b);\n"
 
+    @staticmethod
+    def ensure_constraints(tx: Transaction) -> None:
+        """Enforce a unique path per malware node (idempotent, also creates an index)."""
+        tx.run(
+            "CREATE CONSTRAINT malware_path IF NOT EXISTS "
+            "FOR (n:Malware) REQUIRE n.path IS UNIQUE"
+        )
+
     def create_node(self, tx: Transaction, label: str, properties: dict) -> None:
         # properties : dict with keys and values of properties names and values
-
+        # MERGE on the globally-unique path (parametrized -> no Cypher injection),
+        # then add the family label and set the remaining properties. Idempotent:
+        # re-running does not create duplicate nodes.
         query = (
-            "CREATE (n:" + label + " {" + ", ".join([f"{key}: '{value}'" for key, value in properties.items()]) + "})"
-            "RETURN n"  # do not use id() as it is deprecied
+            "MERGE (n:Malware {path: $path}) "
+            "SET n:" + label + ", n += $props"
         )
         try:
-            tx.run(query)
+            tx.run(query, path=properties["path"], props=properties)
         except CypherSyntaxError:
             self.log.error(f"Error creating node with query: {query}")
 
