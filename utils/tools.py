@@ -39,6 +39,37 @@ def is_pe_file(fullpath: str) -> bool:
         raise e
 
 
+# Mach-O magics (thin binaries, both endiannesses). The fat/universal magic
+# 0xcafebabe is intentionally excluded because it collides with Java .class files.
+_MACHO_MAGICS = {
+    b'\xfe\xed\xfa\xce', b'\xfe\xed\xfa\xcf',
+    b'\xce\xfa\xed\xfe', b'\xcf\xfa\xed\xfe',
+}
+
+
+def is_supported_binary(fullpath: str) -> bool:
+    """
+    Check whether 'fullpath' is a binary LIEF can parse: PE (MZ), ELF (\\x7fELF)
+    or Mach-O. Cursory magic-byte sniff only.
+
+    Args:
+        fullpath (str): The full path to the file to check.
+
+    Returns:
+        bool: True if the file looks like a supported executable format.
+    """
+    try:
+        with open(fullpath, 'rb') as file:
+            magic = file.read(4)
+    except (FileNotFoundError, IsADirectoryError, PermissionError):
+        return False
+    if magic[:2] == b'MZ':          # PE / MS-DOS
+        return True
+    if magic == b'\x7fELF':         # ELF
+        return True
+    return magic in _MACHO_MAGICS   # Mach-O
+
+
 def filename_from_path(path: str) -> str:
     """
     Extract the filename from a given file path.

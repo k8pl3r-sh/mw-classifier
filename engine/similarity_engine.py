@@ -6,7 +6,7 @@ from neo4j import GraphDatabase
 from neo4j.exceptions import TransactionError
 from features.features_extractor import FeaturesExtractor
 from utils.logger import Log
-from utils.tools import is_pe_file, filename_from_path
+from utils.tools import is_supported_binary, filename_from_path
 from utils.config import Config
 import importlib.util
 import inspect
@@ -72,8 +72,7 @@ class SimilarityEngine:
         for root, dirs, paths in os.walk(self.config["samples"]["directory"]):
             for path in paths:
                 fullpath = os.path.join(root, path)
-                if is_pe_file(fullpath):  # if it is a PE
-                    # TODO : add generalization (for ELF and so on)
+                if is_supported_binary(fullpath):  # PE / ELF / Mach-O
                     i += 1
 
                     if not self.config["sampling"]["do_sampling"] or i % self.config["sampling"]["modulo"] == 0:  # Echantillonage pour avoir un max de familles de malwares

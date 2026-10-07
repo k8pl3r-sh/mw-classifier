@@ -13,32 +13,48 @@ class StaticIat:
 
     def extract(self, filename: str) -> dict[str, list[str]]:
         """
-        Extract the import address table from the PE file indicated by the 'filename' parameter, and then return the set
+        Extract imported symbols from a binary. Handles PE, ELF and Mach-O.
+
+        - PE: imports are grouped per DLL (the key is the DLL name), preserving
+          provenance.
+        - ELF / Mach-O: the abstract LIEF API is used (imported functions and
+          linked libraries).
+
         Parameters
         ----------
-        filename
+        filename : str
 
         Returns
         -------
-
+        dict[str, list[str]]
         """
-        # TODO : check PE ici et faire les différents cas
         binary = lief.parse(filename)
         extracted = {}
-        if binary is not None and binary.has_imports:
-            for entry in binary.imports:
-                iat = []
-                for function in entry.entries:
-                    if function.is_ordinal:
-                        func_name = f"Ordinal({function.ordinal})"
-                    else:
-                        func_name = function.name
-                    if func_name:
-                        iat.append(func_name)
-                    else:
-                        self.log.warn(f"Error decoding import name of the PE file: {function}")
+        if binary is None:
+            return extracted
 
-                extracted[entry.name] = iat
+        if isinstance(binary, lief.PE.Binary):
+            if binary.has_imports:
+                for entry in binary.imports:
+                    iat = []
+                    for function in entry.entries:
+                        if function.is_ordinal:
+                            func_name = f"Ordinal({function.ordinal})"
+                        else:
+                            func_name = function.name
+                        if func_name:
+                            iat.append(func_name)
+                        else:
+                            self.log.warn(f"Error decoding import name of the PE file: {function}")
+                    extracted[entry.name] = iat
+        else:
+            # ELF / Mach-O: use the format-agnostic imported-symbols API
+            funcs = [f.name for f in binary.imported_functions if f.name]
+            libs = [str(lib) for lib in getattr(binary, "libraries", [])]
+            if funcs:
+                extracted["imported_functions"] = funcs
+            if libs:
+                extracted["libraries"] = libs
 
-        self.log.debug(f"Extracted {len(extracted)} IAT from {filename}")
+        self.log.debug(f"Extracted {len(extracted)} import groups from {filename}")
         return extracted
