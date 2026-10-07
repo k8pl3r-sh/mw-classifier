@@ -76,19 +76,24 @@ class LSH_Model:
                         jaccard_index = np.mean(
                             jaccard_indexes)  # mean of all features to have a global similarity index
 
+                        # Update the similarity matrix (symmetric), regardless of the
+                        # threshold: the matrix records the raw similarity, the threshold
+                        # only governs whether a relationship is created in Neo4j.
+                        index_1 = self.index_of[malware1]
+                        index_2 = self.index_of[malware2]
+                        self.similarity_matrix[index_1, index_2] = jaccard_index
+                        self.similarity_matrix[index_2, index_1] = jaccard_index
+
                         if jaccard_index > self.config["model"]["threshold"]:
                             self.session.execute_write(self.neo4j.create_relationship, malware1, malware2, jaccard_index)
-
-                        # Update the similarity matrix
-                        # TODO solve attributeError : dict object has no attribute index
-                        #index_1 = self.malware_attributes.index(malware1)
-                        #index_2 = self.malware_attributes.index(malware2)
-                        #self.similarity_matrix[index_1, index_2] = jaccard_index
-                        #self.similarity_matrix[index_2, index_1] = jaccard_index
 
     def run(self, malware_attributes: dict[dict], similarity_matrix) -> None:
         self.malware_attributes = malware_attributes
         self.similarity_matrix = similarity_matrix
+        # Map each malware name to its row/column index in the similarity matrix.
+        # The order matches malware_attributes.keys(), i.e. the order used by the
+        # engine when it builds the matrix and the heatmap labels.
+        self.index_of = {name: i for i, name in enumerate(malware_attributes.keys())}
 
         # key : malware name (str)
         # value : dict avec strings, KERNEL32.dll, SHELL32.dll
