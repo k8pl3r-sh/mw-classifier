@@ -79,6 +79,21 @@ class Neo4jGraph:
         )
         tx.run(query, path1=path1, path2=path2, weight=weight)
 
+    @staticmethod
+    def merge_cluster_node(tx: Transaction, cluster_id: int) -> None:
+        """Create a Cluster node identified by its id, idempotently (no duplicates on re-run)."""
+        tx.run("MERGE (c:Cluster {id: $id})", id=cluster_id)
+
+    @staticmethod
+    def create_membership(tx: Transaction, malware_path: str, cluster_id: int, weight: float = 1.0) -> None:
+        """Link a malware node (matched by path) to its Cluster node (matched by id)."""
+        query = (
+            "MATCH (m {path: $path}), (c:Cluster {id: $id}) "
+            "MERGE (m)-[r:BELONGS_TO]->(c) "
+            "SET r.weight = $weight"
+        )
+        tx.run(query, path=malware_path, id=cluster_id, weight=weight)
+
     def save_graph_as_cypher(self, malware_paths: list[str], malware_attributes, threshold: float, filename: str = "graph.cypher") -> None:
         # TODO : redundant code here
         """

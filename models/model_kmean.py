@@ -63,22 +63,27 @@ class KMeans_Model:
         cluster_map = {}
         for idx, mw in enumerate(malwares):
             cluster_id = int(labels[idx])
-            cluster_node_name = f"Cluster_{cluster_id}"
             cluster_map.setdefault(cluster_id, []).append(mw)
+
+        # Create the Cluster nodes once each (idempotent MERGE, no duplicates).
+        for cluster_id in cluster_map:
             try:
-                self.session.execute_write(
-                    self.neo4j.create_node,
-                    label="Cluster",
-                    properties={"id": cluster_id}
-                )
-                self.session.execute_write(
-                    self.neo4j.create_relationship,
-                    path1=mw,
-                    path2=cluster_node_name,
-                    weight=1.0  # BELONGS_TO relation
-                )
+                self.session.execute_write(self.neo4j.merge_cluster_node, cluster_id=cluster_id)
             except Exception as e:
-                self.log.error(f"Neo4j write error for {mw}@{cluster_id}: {e}")
+                self.log.error(f"Neo4j Cluster node write error for {cluster_id}: {e}")
+
+        # Link each malware to its cluster with a BELONGS_TO relationship.
+        for cluster_id, malware_list in cluster_map.items():
+            for mw in malware_list:
+                try:
+                    self.session.execute_write(
+                        self.neo4j.create_membership,
+                        malware_path=mw,
+                        cluster_id=cluster_id,
+                        weight=1.0
+                    )
+                except Exception as e:
+                    self.log.error(f"Neo4j membership write error for {mw}@{cluster_id}: {e}")
 
         # Create SIMILAR relationships between malware in the same cluster
         for cluster_id, malware_list in cluster_map.items():
