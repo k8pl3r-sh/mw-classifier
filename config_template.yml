@@ -7,6 +7,8 @@ neo4j:
   uri: "neo4j://localhost:7687"
   user: "neo4j"
   password: "password"
+  http_uri: "http://localhost:7474"   # HTTP endpoint polled to check Neo4j is up
+  startup_timeout: 60                 # seconds to wait for Neo4j before giving up
 sklearn:
   n_features: 1048576
 features_cache:

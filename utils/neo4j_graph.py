@@ -21,23 +21,20 @@ class Neo4jGraph:
         self.labels_colors = {}  # Store labels colors if already set
 
     def check_up(self) -> None:
-        # En réalité ne fait pas gagner tant de temps car peu de samples
-        self.log.info("Waiting for Neo4j to start...")
-        i = 0
-        while i < 60:
+        http_uri = self.config['neo4j'].get('http_uri', 'http://localhost:7474')
+        timeout = self.config['neo4j'].get('startup_timeout', 60)
+        self.log.info(f"Waiting for Neo4j to start at {http_uri} (timeout {timeout}s)...")
+        for _ in range(timeout):
             try:
-                response = get("http://localhost:7474")
-                if response.status_code == 200:
+                if get(http_uri).status_code == 200:
                     self.log.info("Neo4j is up and running.")
-                    break
+                    return
             except ConnectionError:
                 pass
             sleep(1)
-            i += 1
 
-        if i == 60:
-            self.log.info("Can't reach Neo4J database : TIMEOUT 60 seconds")
-            sys.exit()
+        self.log.info(f"Can't reach Neo4J database : TIMEOUT {timeout} seconds")
+        sys.exit()
 
 
 
