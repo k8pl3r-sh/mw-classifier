@@ -40,6 +40,16 @@ class Main:
         from evaluation.evaluate import evaluate_all
         evaluate_all(topk=topk)
 
+    def gnn(self, epochs: int):
+        """Train/evaluate the GNN on the call graph (needs torch + torch-geometric)."""
+        samples_dir = Config().get()["samples"]["directory"]
+        from gnn.train import run_gnn  # torch is imported lazily inside run_gnn
+        try:
+            run_gnn(samples_dir, epochs=epochs)
+        except ImportError as e:
+            self.log.error(f"GNN needs PyTorch + torch-geometric: {e}. "
+                           f"Install with: pip install torch torch-geometric")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Malware similarity engine")
@@ -59,11 +69,21 @@ if __name__ == "__main__":
         "--evaluate", action="store_true",
         help="evaluate every model against the known families and print metrics"
     )
+    parser.add_argument(
+        "--gnn", action="store_true",
+        help="train/evaluate the GNN (GIN) on the call graph (needs torch + torch-geometric)"
+    )
+    parser.add_argument(
+        "--epochs", type=int, default=150,
+        help="training epochs for --gnn (default: 150)"
+    )
     args = parser.parse_args()
 
     m = Main()
 
-    if args.evaluate:
+    if args.gnn:
+        m.gnn(args.epochs)
+    elif args.evaluate:
         m.evaluate(args.topk)
     elif args.classify:
         m.classify(args.classify, args.topk)

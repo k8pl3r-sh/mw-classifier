@@ -1,0 +1,6 @@
+# Optional dependencies for the GNN track (main.py --gnn).
+# Kept out of requirements.txt so the core install stays light.
+# CPU install is fine for the current corpus size:
+#   pip install -r requirements-gnn.txt
+torch
+torch-geometric
