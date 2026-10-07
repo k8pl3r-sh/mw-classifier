@@ -24,8 +24,16 @@ hnsw:
   dimension: 128
   max_elements: 1000000
 model:
+  # One of: LSH_Model, KMeans_Model, KMeans_Model_Unsupervised,
+  #         Agglomerative_Model, DBSCAN_Model, HDBSCAN_Model
   default: "LSH_Model"
-  threshold: 0.6
+  threshold: 0.6                 # LSH_Model: Jaccard threshold for a SIMILAR edge
+  n_clusters: 30                 # KMeans_Model / Agglomerative_Model
+  k_min: 2                       # KMeans_Model_Unsupervised: silhouette search range
+  k_max: 10
+  dbscan_eps: 0.5                # DBSCAN_Model: max Jaccard distance within a cluster
+  dbscan_min_samples: 2          # DBSCAN_Model: min samples to form a dense region
+  hdbscan_min_cluster_size: 2    # HDBSCAN_Model: smallest cluster size
 samples:
   directory: "SAMPLES/APT1_MALWARE_FAMILIES/"
 database:
