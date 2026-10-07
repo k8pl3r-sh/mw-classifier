@@ -27,11 +27,12 @@ def _render_classifier(res: dict) -> str:
     return "\n".join(lines)
 
 
-def _render_clustering(res: dict) -> str:
+def _render_clustering(res: dict, title: str = "") -> str:
     lines = []
     sep = "=" * 92
     lines.append(sep)
-    lines.append(f"  CLUSTERING — vs {res['_n_families']} true families over {res['_n_samples']} samples")
+    label = f" [{title}]" if title else ""
+    lines.append(f"  CLUSTERING{label} — vs {res['_n_families']} true families over {res['_n_samples']} samples")
     lines.append(sep)
     header = f"  {'model':<28}{'ARI':>7}{'NMI':>7}{'homog':>8}{'compl':>8}{'V':>7}{'#clu':>7}{'#noise':>8}"
     lines.append(header)
@@ -48,10 +49,23 @@ def _render_clustering(res: dict) -> str:
     return "\n".join(lines)
 
 
+# Representations swept by --evaluate so the harness can decide which wins.
+_ALL_GROUPS = ["imports", "strings", "imphash", "pe_sections", "rich_header", "pe_resources", "call_graph"]
+_SWEEP = [
+    ("presence / all features", "presence", None),
+    ("hashed / all features", "hashed", None),
+    ("hashed / without strings", "hashed", [g for g in _ALL_GROUPS if g != "strings"]),
+]
+
+
 def evaluate_all(topk: int = 5) -> None:
     sim = SimilarityEngine()
     sim.load_corpus()  # features only, no Neo4j
     attributes = sim.malware_attributes
 
     print(_render_classifier(evaluate_classifier(attributes, k=topk)))
-    print(_render_clustering(evaluate_clustering(attributes)))
+
+    # Sweep feature representations so one run compares them head-to-head.
+    for title, representation, features in _SWEEP:
+        res = evaluate_clustering(attributes, representation=representation, features=features)
+        print(_render_clustering(res, title))

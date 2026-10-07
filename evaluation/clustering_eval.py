@@ -24,7 +24,7 @@ from models.clustering_utils import build_feature_matrix
 from evaluation.ground_truth import true_labels
 
 
-def _labelings(X: np.ndarray, config: dict, log) -> dict:
+def _labelings_internal(X: np.ndarray, config: dict, log) -> dict:
     """Return {model_name: labels_array} for every clustering model."""
     algos = {}
     n_samples = X.shape[0]
@@ -68,17 +68,19 @@ def _labelings(X: np.ndarray, config: dict, log) -> dict:
     return algos
 
 
-def evaluate_clustering(malware_attributes: dict) -> dict:
-    """Compute clustering-quality metrics (vs true families) for each model."""
+def evaluate_clustering(malware_attributes: dict, representation: str = None,
+                        features: list = None) -> dict:
+    """Compute clustering-quality metrics (vs true families) for each model,
+    for a given feature representation (defaults to the config)."""
     log = Log("ClusteringEval")
     config = Config().get()
 
-    X, malwares, _ = build_feature_matrix(malware_attributes)
+    X, malwares, _ = build_feature_matrix(malware_attributes, representation=representation, features=features)
     truth = true_labels(malwares)
     n_families = len(set(truth))
 
     results = {"_n_families": n_families, "_n_samples": len(malwares)}
-    for name, labels in _labelings(X, config, log).items():
+    for name, labels in _labelings_internal(X, config, log).items():
         labels = np.asarray(labels)
         homogeneity, completeness, v_measure = homogeneity_completeness_v_measure(truth, labels)
         results[name] = {

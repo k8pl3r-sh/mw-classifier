@@ -12,35 +12,76 @@ from utils.config import Config
 
 HASH_DIM_DEFAULT = 16384  # 2**14 columns for the hashing trick
 
+# Single-key features; everything else (per-DLL keys of static_iat, plus the
+# ELF/Mach-O 'imported_functions'/'libraries' keys) is grouped as "imports".
+_SINGLE_KEY_FEATURES = {
+    "strings", "call_graph", "imphash", "pe_sections", "rich_header", "pe_resources",
+}
 
-def build_feature_matrix(malware_attributes: dict, hash_dim: int = None):
+
+def feature_group(key: str) -> str:
+    """Map a raw feature key to a logical group usable in config selection."""
+    return key if key in _SINGLE_KEY_FEATURES else "imports"
+
+
+def build_feature_matrix(malware_attributes: dict, representation: str = None,
+                         features: list = None, hash_dim: int = None):
     """
-    Build a binary token-incidence matrix via the hashing trick.
+    Build the clustering feature matrix.
 
-    Every token (prefixed with its feature name, like the LSH/Classifier
-    MinHash) is hashed to a column; the cell is 1 if the sample contains a token
-    hashing there. This exposes the *content* of the features (strings, call
-    graph, imports...) to the clustering models, instead of a single
-    present/absent bit per feature key. Collisions are the usual hashing-trick
-    trade-off; raise ``hash_dim`` to reduce them.
+    representation:
+      - "presence" : one binary column per (included) feature key, 1 if present.
+                     Low-dimensional, dominated by the structured import keys.
+      - "hashed"   : hashing trick, one binary column per hashed token (prefixed
+                     with its feature name). Exposes token *content* but is
+                     sensitive to verbose/noisy features and hash collisions.
 
-    Returns
-    -------
-    X : np.ndarray of shape (n_samples, hash_dim), dtype uint8 (0/1)
-    malwares : list[str]  malware names, row order of X
-    columns : None  (columns are hashed buckets, not named features)
+    features: list of feature groups to INCLUDE (see feature_group); empty/None
+      means all. E.g. exclude the noisy strings with
+      ["imports","imphash","pe_sections","rich_header","pe_resources","call_graph"].
+
+    Falls back to the ``clustering`` section of the config when args are None.
+
+    Returns (X, malwares, columns) where columns is the key list ("presence") or
+    None ("hashed").
     """
+    cfg = Config().get().get("clustering", {})
+    if representation is None:
+        representation = cfg.get("representation", "presence")
+    if features is None:
+        features = cfg.get("features", []) or []
     if hash_dim is None:
-        hash_dim = Config().get().get("clustering", {}).get("hash_dim", HASH_DIM_DEFAULT)
+        hash_dim = cfg.get("hash_dim", HASH_DIM_DEFAULT)
+
+    allowed = set(features) if features else None  # None => all groups
+
+    def included(key: str) -> bool:
+        return allowed is None or feature_group(key) in allowed
 
     malwares = list(malware_attributes.keys())
-    X = np.zeros((len(malwares), hash_dim), dtype=np.uint8)
+
+    if representation == "hashed":
+        X = np.zeros((len(malwares), hash_dim), dtype=np.uint8)
+        for i, mw in enumerate(malwares):
+            for key, tokens in malware_attributes[mw].items():
+                if not included(key):
+                    continue
+                for token in tokens:
+                    idx = mmh3.hash(f"{key}:{token}") % hash_dim
+                    X[i, idx] = 1
+        return X, malwares, None
+
+    # "presence": one binary column per included feature key
+    feature_list = sorted({
+        key for attrs in malware_attributes.values() for key in attrs.keys() if included(key)
+    })
+    col = {key: j for j, key in enumerate(feature_list)}
+    X = np.zeros((len(malwares), len(feature_list)), dtype=np.uint8)
     for i, mw in enumerate(malwares):
-        for feature_name, tokens in malware_attributes[mw].items():
-            for token in tokens:
-                idx = mmh3.hash(f"{feature_name}:{token}") % hash_dim
-                X[i, idx] = 1
-    return X, malwares, None
+        for key, tokens in malware_attributes[mw].items():
+            if included(key) and tokens:
+                X[i, col[key]] = 1
+    return X, malwares, feature_list
 
 
 def _jaccard(xa: np.ndarray, xb: np.ndarray) -> float:

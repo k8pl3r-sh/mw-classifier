@@ -35,7 +35,9 @@ model:
   dbscan_min_samples: 2          # DBSCAN_Model: min samples to form a dense region
   hdbscan_min_cluster_size: 2    # HDBSCAN_Model: smallest cluster size
 clustering:
-  hash_dim: 16384                # hashing-trick dimension for the clustering feature matrix
+  representation: "presence"     # "presence" (1 col/feature key) or "hashed" (hashing trick on tokens)
+  features: []                   # [] = all; else subset of: imports, strings, imphash, pe_sections, rich_header, pe_resources, call_graph
+  hash_dim: 16384                # hashing-trick dimension (only used when representation = hashed)
 samples:
   directory: "SAMPLES/APT1_MALWARE_FAMILIES/"
 database:
