@@ -85,10 +85,16 @@ class KMeans_Model:
                 except Exception as e:
                     self.log.error(f"Neo4j membership write error for {mw}@{cluster_id}: {e}")
 
-        # Create SIMILAR relationships between malware in the same cluster
+        # Create SIMILAR relationships between malware in the same cluster,
+        # and fill the similarity matrix (1.0 for same-cluster pairs).
+        index_of = {mw: idx for idx, mw in enumerate(malwares)}
         for cluster_id, malware_list in cluster_map.items():
             for i in range(len(malware_list)):
                 for j in range(i + 1, len(malware_list)):
+                    if similarity_matrix is not None:
+                        a, b = index_of[malware_list[i]], index_of[malware_list[j]]
+                        similarity_matrix[a, b] = 1.0
+                        similarity_matrix[b, a] = 1.0
                     try:
                         self.session.execute_write(
                             self.neo4j.create_relationship,
