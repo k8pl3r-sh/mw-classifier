@@ -181,20 +181,21 @@ class SimilarityEngine:
 
         model.run(self.malware_attributes, self.similarity_matrix)
 
-    def run(self) -> None:
-
-        # Load file pkl
+    def load_corpus(self) -> None:
+        """Populate self.malware_attributes from the cache or by extraction.
+        Does not touch Neo4j, so it can be reused for one-off classification."""
         if self.config["features_cache"]["load"]:
             self.load_extracted_features(self.config["features_cache"]["filename"])
         else:
             self.extract_features()
 
-        self.log.info(f"Found {len(self.malware_attributes)} PE binaries in {self.config['samples']['directory']}")
+        self.log.info(f"Found {len(self.malware_attributes)} binaries in {self.config['samples']['directory']}")
 
-        # Save to pkl file
         if self.config["features_cache"]["save"]:
             self.save_extracted_features(self.config["features_cache"]["filename"])
 
+    def run(self) -> None:
+        self.load_corpus()
         self.create_similarity_graph()
 
     def similarity_matrix_heatmap(self, filename: str) -> None:

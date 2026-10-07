@@ -24,6 +24,17 @@ class Main:
         elapsed_time = end_time - start_time
         self.log.info(f"Elapsed time: {elapsed_time:.2f} seconds")
 
+    def classify(self, filepath: str, topk: int):
+        """Attribute a single binary to the nearest known family and print a report."""
+        from engine.classifier import Classifier
+        from utils.report import render_classification
+
+        sim = SimilarityEngine()
+        sim.load_corpus()  # features only, no Neo4j needed
+        classifier = Classifier(sim.malware_attributes)
+        result = classifier.classify_file(filepath, k=topk)
+        print(render_classification(result))
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Malware similarity engine")
@@ -31,11 +42,23 @@ if __name__ == "__main__":
         "--optimize", action="store_true",
         help="run under memory_profiler to report per-line memory usage"
     )
+    parser.add_argument(
+        "--classify", metavar="FILE",
+        help="classify a single binary against the corpus and print a report (no graph build)"
+    )
+    parser.add_argument(
+        "--topk", type=int, default=5,
+        help="number of nearest neighbors to report with --classify (default: 5)"
+    )
     args = parser.parse_args()
 
     m = Main()
-    run = m.main
-    if args.optimize:
-        from memory_profiler import profile
-        run = profile(run)
-    run()
+
+    if args.classify:
+        m.classify(args.classify, args.topk)
+    else:
+        run = m.main
+        if args.optimize:
+            from memory_profiler import profile
+            run = profile(run)
+        run()
