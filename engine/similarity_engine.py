@@ -35,7 +35,17 @@ class SimilarityEngine:
 
     def load_extracted_features(self, filename: str) -> None:
         with open(filename, 'rb') as f:
-            self.malware_attributes = load(f)
+            data = load(f)
+        # Guard against a stale cache written by an older code version
+        # (e.g. a tuple instead of the {name: {feature: set}} dict).
+        if not isinstance(data, dict):
+            self.log.warn(
+                f"Cache {filename} has an incompatible format "
+                f"({type(data).__name__}); re-extracting features."
+            )
+            self.extract_features()
+            return
+        self.malware_attributes = data
         self.log.info(f"Extracted features loaded from {filename}")
 
     def get_neo4j_driver(self) -> GraphDatabase.driver:
