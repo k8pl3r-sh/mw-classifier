@@ -159,3 +159,4 @@ config.yml
 /SAMPLES/
 
 cached_features.pkl
+graphics/
