@@ -157,3 +157,5 @@ downloader/temp
 *.dot # remove dot graph
 config.yml
 /SAMPLES/
+
+cached_features.pkl
