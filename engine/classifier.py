@@ -71,16 +71,9 @@ class Classifier:
         labels, _ = self.index.knn_query(np.array([query_mh.hashvalues], dtype=np.float32), k=n_query)
         return [self.names[i] for i in labels[0]]
 
-    def classify(self, query_attributes: dict, k: int = 5) -> dict:
-        query_mh = self._build_minhash(query_attributes)
-        candidates = self._candidates(query_mh, k)
-
-        scored = sorted(
-            ((name, query_mh.jaccard(self.minhashes[name])) for name in candidates),
-            key=lambda pair: pair[1], reverse=True
-        )[:k]
-
-        # Family vote weighted by similarity
+    def _vote(self, scored: list) -> dict:
+        """Turn a ranked [(name, score), ...] list into a classification result
+        (family vote weighted by similarity)."""
         votes = {}
         for name, score in scored:
             fam = self.family_of(name)
@@ -102,6 +95,26 @@ class Classifier:
                 for name, score in scored
             ],
         }
+
+    def classify(self, query_attributes: dict, k: int = 5) -> dict:
+        query_mh = self._build_minhash(query_attributes)
+        candidates = self._candidates(query_mh, k)
+        scored = sorted(
+            ((name, query_mh.jaccard(self.minhashes[name])) for name in candidates),
+            key=lambda pair: pair[1], reverse=True
+        )[:k]
+        return self._vote(scored)
+
+    def classify_corpus_member(self, name: str, k: int = 5) -> dict:
+        """Classify a sample already in the corpus against all the others
+        (leave-one-out): the sample itself is excluded from the neighbors.
+        Used by the evaluation harness."""
+        query_mh = self.minhashes[name]
+        scored = sorted(
+            ((other, query_mh.jaccard(mh)) for other, mh in self.minhashes.items() if other != name),
+            key=lambda pair: pair[1], reverse=True
+        )[:k]
+        return self._vote(scored)
 
     def classify_file(self, filepath: str, k: int = 5) -> dict:
         if not is_supported_binary(filepath):
