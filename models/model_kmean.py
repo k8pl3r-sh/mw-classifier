@@ -85,24 +85,32 @@ class KMeans_Model:
                 except Exception as e:
                     self.log.error(f"Neo4j membership write error for {mw}@{cluster_id}: {e}")
 
-        # Create SIMILAR relationships between malware in the same cluster,
-        # and fill the similarity matrix (1.0 for same-cluster pairs).
+        # Create SIMILAR relationships between malware in the same cluster.
+        # The weight is the real Jaccard similarity of their binary feature
+        # vectors (not a blanket 1.0), and the matrix records the same value.
         index_of = {mw: idx for idx, mw in enumerate(malwares)}
         for cluster_id, malware_list in cluster_map.items():
             for i in range(len(malware_list)):
                 for j in range(i + 1, len(malware_list)):
+                    a, b = index_of[malware_list[i]], index_of[malware_list[j]]
+                    xa = X[a].astype(bool)
+                    xb = X[b].astype(bool)
+                    union = int((xa | xb).sum())
+                    weight = float((xa & xb).sum() / union) if union else 0.0
+
                     if similarity_matrix is not None:
-                        a, b = index_of[malware_list[i]], index_of[malware_list[j]]
-                        similarity_matrix[a, b] = 1.0
-                        similarity_matrix[b, a] = 1.0
-                    try:
-                        self.session.execute_write(
-                            self.neo4j.create_relationship,
-                            path1=malware_list[i],
-                            path2=malware_list[j],
-                            weight=1.0  # full similarity within cluster
-                        )
-                    except Exception as e:
-                        self.log.error(f"Neo4j SIMILAR write error between {malware_list[i]} and {malware_list[j]}: {e}")
+                        similarity_matrix[a, b] = weight
+                        similarity_matrix[b, a] = weight
+
+                    if weight > 0.0:
+                        try:
+                            self.session.execute_write(
+                                self.neo4j.create_relationship,
+                                path1=malware_list[i],
+                                path2=malware_list[j],
+                                weight=weight
+                            )
+                        except Exception as e:
+                            self.log.error(f"Neo4j SIMILAR write error between {malware_list[i]} and {malware_list[j]}: {e}")
 
         self.log.info(f"K-Means clustering assigned {len(malwares)} samples into {n_clusters} families.")
