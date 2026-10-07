@@ -35,6 +35,11 @@ class Main:
         result = classifier.classify_file(filepath, k=topk)
         print(render_classification(result))
 
+    def evaluate(self, topk: int):
+        """Evaluate every model against the known families (no Neo4j needed)."""
+        from evaluation.evaluate import evaluate_all
+        evaluate_all(topk=topk)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Malware similarity engine")
@@ -48,13 +53,19 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--topk", type=int, default=5,
-        help="number of nearest neighbors to report with --classify (default: 5)"
+        help="number of nearest neighbors for --classify / --evaluate (default: 5)"
+    )
+    parser.add_argument(
+        "--evaluate", action="store_true",
+        help="evaluate every model against the known families and print metrics"
     )
     args = parser.parse_args()
 
     m = Main()
 
-    if args.classify:
+    if args.evaluate:
+        m.evaluate(args.topk)
+    elif args.classify:
         m.classify(args.classify, args.topk)
     else:
         run = m.main
