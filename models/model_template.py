@@ -11,8 +11,8 @@ class TemplateModel:
         self.redis_storage = redis
 
 
-    def run(self, malware_attribute: dict[dict]) -> None:
-        # key : malware name (str)
-        # value : dict avec strings, KERNEL32.dll, SHELL32.dll
-        # TODO simplify the features : one per key (here IAT has one key per DLL import)
+    def run(self, malware_attributes: dict, similarity_matrix=None) -> None:
+        # Signature aligned with the other models: run(malware_attributes, similarity_matrix).
+        # malware_attributes: {malware_name: {feature_name: set(tokens)}}
+        # similarity_matrix: optional NxN numpy array to fill in place.
         pass
