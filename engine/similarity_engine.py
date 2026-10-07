@@ -198,7 +198,9 @@ class SimilarityEngine:
 
         """
         self.log.info("Generating heatmap...")
-        filename = self.config["graphics"]["path"] + filename
+        graphics_path = self.config.get("graphics", {}).get("path", "graphics/")
+        os.makedirs(graphics_path, exist_ok=True)  # create the output dir if missing
+        filename = os.path.join(graphics_path, filename)
         # Set up the matplotlib figure
         plt.figure(figsize=(25, 25), dpi=300)
 

@@ -19,10 +19,11 @@ class Main:
         sim = SimilarityEngine()
         sim.run()
 
+        sim.similarity_matrix_heatmap('similarity_matrix.png')
+
         end_time = time()
         elapsed_time = end_time - start_time
         self.log.info(f"Elapsed time: {elapsed_time:.2f} seconds")
-        # sim.similarity_matrix_heatmap('strings_and_iat_clean.png')
 
 
 if __name__ == "__main__":
